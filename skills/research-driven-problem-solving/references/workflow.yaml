@@ -1,0 +1,425 @@
+name: research-driven-iterative-problem-solving-workflow
+version: 1.2.0
+type: workflow
+category: meta-skill
+
+summary: >
+  A workflow specification for solving open-ended research, engineering,
+  and real-world decision problems through structured framing,
+  formalization, validation, evidence tracking, and iterative refinement.
+
+positioning:
+  description: >
+    This is a workflow or meta-skill rather than a narrow task-specific tool.
+    It is intended to orchestrate upper-level problem solving, not replace
+    atomic capabilities such as search, coding, retrieval, experimentation,
+    or translation.
+
+modes:
+  lite:
+    description: >
+      A compact mode for medium-complexity tasks where a full seven-stage
+      workflow would be unnecessarily heavy.
+    stages:
+      - lite-problem-framing
+      - lite-review-and-gap-analysis
+      - lite-formalize-and-propose
+      - lite-validate-and-revise
+
+  full:
+    description: >
+      A complete mode for open-ended, uncertain, high-stakes, or multi-stage problems.
+    stages:
+      - problem-framing
+      - prior-work-review
+      - gap-and-constraint-analysis
+      - formalization
+      - solution-attempt
+      - validation-and-feedback
+      - reanalysis-and-iteration
+
+applicable-scenarios:
+  - research planning
+  - thesis supervision
+  - engineering diagnosis
+  - method comparison
+  - policy analysis
+  - decision support
+  - technical proposal design
+  - open-ended analytical tasks
+
+non-applicable-scenarios:
+  - single-fact lookup
+  - direct formatting requests
+  - basic translation
+  - low-complexity tasks with complete instructions
+  - purely mechanical execution tasks
+
+inputs:
+  required:
+    - problem-statement
+    - task-context
+    - known-constraints
+    - desired-output
+  optional:
+    - available-resources
+    - prior-attempts
+    - data-availability
+    - evaluation-criteria
+    - deadlines
+    - risk-tolerance
+    - citation-style
+
+outputs:
+  - problem-frame
+  - prior-work-summary
+  - gap-and-constraint-analysis
+  - formalized-problem
+  - solution-attempt
+  - validation-feedback
+  - evidence-log
+  - iteration-plan
+  - stop-conclusion
+
+governing-principles:
+  - define the problem before searching for methods
+  - distinguish prior knowledge from current-problem-specific reasoning
+  - formalize the problem whenever quantification is possible
+  - prefer executable solution paths over vague discussion
+  - validate claims with evidence
+  - cite concrete sources when source-dependent claims matter
+  - do not claim novelty or superiority without direct support
+  - treat iteration as normal rather than exceptional
+  - stop only when success or justified termination is reached
+
+stages:
+  - id: lite-problem-framing
+    maps-to:
+      - problem-framing
+    objective: >
+      Define the objective, scope, constraints, resources, and success criteria
+      with only the detail needed to start structured work safely.
+    key-questions:
+      - What exactly is the problem?
+      - What is in scope and out of scope?
+      - What constraints must be respected?
+      - What counts as success?
+    deliverables:
+      - structured-problem-statement
+      - scope-definition
+      - success-criteria
+    exit-criteria:
+      - objective is explicit
+      - scope is bounded
+      - success criteria are stated
+
+  - id: lite-review-and-gap-analysis
+    maps-to:
+      - prior-work-review
+      - gap-and-constraint-analysis
+    objective: >
+      Summarize the most relevant prior work and explain why it is insufficient
+      to copy directly for the current task.
+    key-questions:
+      - What prior work or practice is closest to this task?
+      - Which assumptions from that work are likely to fail here?
+      - What constraints or uncertainties dominate the current task?
+    deliverables:
+      - representative-method-summary
+      - source-list
+      - difference-analysis
+      - constraint-list
+    exit-criteria:
+      - at least one relevant prior approach is identified
+      - major differences and constraints are explicit
+
+  - id: lite-formalize-and-propose
+    maps-to:
+      - formalization
+      - solution-attempt
+    objective: >
+      Convert the task into a testable form and choose one executable path
+      for an initial attempt.
+    key-questions:
+      - What are the variables, objective, constraints, and metrics?
+      - What baselines or comparators matter?
+      - Which solution path should be tried first and why?
+    deliverables:
+      - formal-problem-definition
+      - metric-definition
+      - baseline-or-comparator-plan
+      - proposed-solution-path
+      - implementation-plan
+    exit-criteria:
+      - the problem representation is testable
+      - a concrete initial path is selected
+
+  - id: lite-validate-and-revise
+    maps-to:
+      - validation-and-feedback
+      - reanalysis-and-iteration
+    objective: >
+      Evaluate the initial attempt with available evidence and decide whether
+      to revise, continue, or stop.
+    key-questions:
+      - What evidence is available now?
+      - What worked, what failed, and why?
+      - What is the next justified action?
+    deliverables:
+      - evaluation-result
+      - evidence-log
+      - feedback-summary
+      - revision-plan
+      - stop-conclusion-if-applicable
+    exit-criteria:
+      - evidence is collected or limitations are stated
+      - the next action is explicit
+
+  - id: problem-framing
+    objective: >
+      Clarify the objective, context, scope, constraints, resources,
+      and success criteria.
+    key-questions:
+      - What exactly is the problem?
+      - For whom is the problem being solved?
+      - What is in scope and out of scope?
+      - What constraints must be respected?
+      - What counts as success?
+    deliverables:
+      - structured-problem-statement
+      - scope-definition
+      - success-criteria
+    exit-criteria:
+      - objective is explicit
+      - scope is bounded
+      - success criteria are stated
+
+  - id: prior-work-review
+    objective: >
+      Identify related research, practical solutions, and relevant failures.
+    key-questions:
+      - What has already been tried?
+      - What ideas can be reused?
+      - What assumptions do prior methods rely on?
+      - Which sources are authoritative enough to cite?
+      - What failed and why?
+    deliverables:
+      - representative-method-summary
+      - reusable-ideas-list
+      - limitations-and-failures-list
+      - source-list
+    exit-criteria:
+      - at least one relevant prior approach is identified
+      - assumptions and limitations are summarized
+      - source quality is assessed when claims depend on it
+
+  - id: gap-and-constraint-analysis
+    objective: >
+      Explain why prior solutions cannot be copied directly and identify
+      the true difficulty of the current problem.
+    key-questions:
+      - How is the current problem different?
+      - Which assumptions from prior work no longer hold?
+      - What hard constraints dominate the task?
+      - Where does uncertainty enter the problem?
+    deliverables:
+      - difference-analysis
+      - constraint-list
+      - difficulty-diagnosis
+    exit-criteria:
+      - major differences are explicit
+      - transferability is assessed
+      - core constraints are listed
+
+  - id: formalization
+    objective: >
+      Translate the problem into a computable, testable, and comparable form.
+    key-questions:
+      - What are the variables?
+      - What is the objective?
+      - What are the constraints?
+      - What assumptions are being made?
+      - What metrics will be used?
+      - What baselines or comparators are relevant?
+      - What data are required?
+    deliverables:
+      - formal-problem-definition
+      - metric-definition
+      - assumption-list
+      - baseline-or-comparator-plan
+      - data-requirements
+    exit-criteria:
+      - variables and objectives are defined
+      - constraints are explicit
+      - evaluation metrics are measurable
+      - comparison targets are stated when evaluation matters
+
+  - id: solution-attempt
+    objective: >
+      Select an executable path and produce an initial solution attempt.
+    key-questions:
+      - Which solution path is chosen?
+      - Why is it chosen over alternatives?
+      - What will be implemented first?
+      - What risks are anticipated?
+    deliverables:
+      - proposed-solution-path
+      - implementation-plan
+      - initial-result-or-prototype
+    exit-criteria:
+      - a concrete path is selected
+      - an initial attempt exists
+
+  - id: validation-and-feedback
+    objective: >
+      Evaluate the current attempt using evidence.
+    key-questions:
+      - How is performance evaluated?
+      - Which baselines or comparators are used?
+      - What works?
+      - What fails?
+      - What likely causes the deviation?
+      - What evidence is missing?
+    deliverables:
+      - evaluation-result
+      - feedback-summary
+      - deviation-diagnosis
+      - evidence-log
+      - reproducibility-notes
+    exit-criteria:
+      - evidence is collected
+      - performance is compared with criteria
+      - failure sources are analyzed when needed
+
+  - id: reanalysis-and-iteration
+    objective: >
+      Revise framing, assumptions, data, method, or implementation path
+      based on the feedback.
+    key-questions:
+      - What should be revised?
+      - What remains valid?
+      - Should the workflow continue or stop?
+      - If it continues, what is the next cycle?
+    deliverables:
+      - revision-plan
+      - next-iteration-plan
+      - stop-conclusion-if-applicable
+    exit-criteria:
+      - next action is explicit
+      - continue or stop decision is justified
+
+transition-rules:
+  - from: lite-problem-framing
+    to: lite-review-and-gap-analysis
+    condition: objective, scope, and success criteria are explicit
+
+  - from: lite-review-and-gap-analysis
+    to: lite-formalize-and-propose
+    condition: prior work, differences, and constraints are clear enough to proceed
+
+  - from: lite-formalize-and-propose
+    to: lite-validate-and-revise
+    condition: the proposed path is testable or otherwise evaluable
+
+  - from: lite-validate-and-revise
+    to: lite-formalize-and-propose
+    condition: the task formulation is still valid but the plan needs revision
+
+  - from: lite-validate-and-revise
+    to: lite-review-and-gap-analysis
+    condition: prior-work assumptions or transferability must be revisited
+
+  - from: lite-validate-and-revise
+    to: end
+    condition: success criteria are met or termination is justified
+
+  - from: problem-framing
+    to: prior-work-review
+    condition: problem is sufficiently framed
+
+  - from: prior-work-review
+    to: gap-and-constraint-analysis
+    condition: prior work has been summarized
+
+  - from: gap-and-constraint-analysis
+    to: formalization
+    condition: differences and constraints are clear
+
+  - from: formalization
+    to: solution-attempt
+    condition: the problem representation is testable
+
+  - from: solution-attempt
+    to: validation-and-feedback
+    condition: an initial attempt exists
+
+  - from: validation-and-feedback
+    to: reanalysis-and-iteration
+    condition: feedback has been collected
+
+  - from: reanalysis-and-iteration
+    to: formalization
+    condition: the problem must be reformulated
+
+  - from: reanalysis-and-iteration
+    to: solution-attempt
+    condition: the formulation remains valid but the solution path must change
+
+  - from: reanalysis-and-iteration
+    to: end
+    condition: success criteria are met or termination is justified
+
+mode-selection-policy:
+  use-lite-if:
+    - the task is medium in complexity
+    - the problem is already mostly framed
+    - uncertainty is limited
+    - the consequences of error are moderate
+  use-full-if:
+    - the task is open-ended
+    - multiple constraints interact
+    - uncertainty is significant
+    - the decision is high-stakes
+    - iteration is likely required
+
+clarification-policy:
+  ask-for-clarification-if:
+    - the core objective is missing
+    - constraints are contradictory
+    - success criteria cannot be inferred safely
+  otherwise:
+    - make the best grounded assumptions available
+    - label assumptions explicitly
+
+termination-conditions:
+  - success criteria are met
+  - no feasible path exists under current constraints
+  - evidence quality is too weak to support further claims
+  - further iteration is not justified by expected improvement
+
+quality-checks:
+  - Was the problem framed before method selection?
+  - Were prior methods summarized with assumptions and limitations?
+  - Were source-dependent claims grounded in identifiable sources or labeled as tentative?
+  - Were key differences from prior work made explicit?
+  - Was the problem formalized into measurable terms where possible?
+  - Were baselines, comparators, and evidence requirements stated where evaluation matters?
+  - Was a concrete solution attempt proposed?
+  - Was validation based on evidence rather than intuition?
+  - Was the iteration or stopping decision justified?
+
+memory-fields:
+  - problem-version
+  - scope
+  - assumptions
+  - constraints
+  - formalization
+  - chosen-solution-path
+  - evaluation-metrics
+  - baseline-or-comparator-plan
+  - source-list
+  - evidence-log
+  - feedback-log
+  - iteration-history
+  - reproducibility-notes
+  - stop-rationale

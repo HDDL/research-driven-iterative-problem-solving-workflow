@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Problem Solving"
+  short_description: "Structure open-ended research and engineering tasks into evidence-aware iterative workflows."
+  default_prompt: "Use $research-driven-problem-solving to frame this research task, review prior work, and produce a validation-aware plan."
+
+policy:
+  allow_implicit_invocation: true
