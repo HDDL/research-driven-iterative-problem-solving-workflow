@@ -1,12 +1,13 @@
 name: research-driven-iterative-problem-solving-workflow
-version: 1.2.0
+version: 1.3.0
 type: workflow
 category: meta-skill
 
 summary: >
   A workflow specification for solving open-ended research, engineering,
   and real-world decision problems through structured framing,
-  formalization, validation, evidence tracking, and iterative refinement.
+  formalization, validation, evidence tracking, and iterative refinement,
+  with explicit next-step selection at each cycle.
 
 positioning:
   description: >
@@ -14,6 +15,37 @@ positioning:
     It is intended to orchestrate upper-level problem solving, not replace
     atomic capabilities such as search, coding, retrieval, experimentation,
     or translation.
+
+problem-types:
+  research:
+    use-when:
+      - prior work, evidence quality, or claim strength strongly affect the answer
+      - the main risk is overclaiming from weak support
+    emphasis:
+      - strongest relevant sources
+      - claim boundaries
+      - evidence gaps
+      - what would falsify the current conclusion
+
+  engineering:
+    use-when:
+      - system behavior, code, tooling, or reproducibility strongly affect the answer
+      - the main risk is shipping an unverified fix or proposal
+    emphasis:
+      - reproduction
+      - isolation of the main blocker
+      - smallest informative test or change
+      - verification after each change
+
+  decision:
+    use-when:
+      - the task is choosing among alternatives under constraints
+      - the main risk is hidden tradeoffs or irreversible downside
+    emphasis:
+      - explicit criteria
+      - a small realistic option set
+      - downside and reversibility
+      - triggers for revisiting the decision
 
 modes:
   lite:
@@ -32,11 +64,11 @@ modes:
     stages:
       - problem-framing
       - prior-work-review
-      - gap-and-constraint-analysis
+      - problem-characterization-and-gap-analysis
       - formalization
       - solution-attempt
       - validation-and-feedback
-      - reanalysis-and-iteration
+      - failure-diagnosis-and-iterative-revision
 
 applicable-scenarios:
   - research planning
@@ -72,23 +104,36 @@ inputs:
 
 outputs:
   - problem-frame
+  - problem-type
+  - critical-uncertainty
   - prior-work-summary
-  - gap-and-constraint-analysis
+  - problem-characterization-and-gap-analysis
   - formalized-problem
   - solution-attempt
+  - result-summary
+  - result-gap-summary
+  - validation-gate
   - validation-feedback
+  - root-cause-analysis
+  - dominant-cause
+  - re-entry-stage
   - evidence-log
+  - next-action
   - iteration-plan
   - stop-conclusion
 
 governing-principles:
   - define the problem before searching for methods
+  - identify the uncertainty that most affects the next decision
   - distinguish prior knowledge from current-problem-specific reasoning
   - formalize the problem whenever quantification is possible
   - prefer executable solution paths over vague discussion
+  - prefer the cheapest informative next step when multiple paths are possible
   - validate claims with evidence
+  - after each attempt, record both the result and the analysis of why it happened
   - cite concrete sources when source-dependent claims matter
   - do not claim novelty or superiority without direct support
+  - ask only the minimum clarification needed to avoid unsafe or high-cost mistakes
   - treat iteration as normal rather than exceptional
   - stop only when success or justified termination is reached
 
@@ -101,37 +146,45 @@ stages:
       with only the detail needed to start structured work safely.
     key-questions:
       - What exactly is the problem?
+      - What kind of problem is it: research, engineering, or decision?
       - What is in scope and out of scope?
       - What constraints must be respected?
       - What counts as success?
+      - What uncertainty blocks the next step?
     deliverables:
       - structured-problem-statement
+      - problem-type
       - scope-definition
       - success-criteria
+      - critical-uncertainty
     exit-criteria:
       - objective is explicit
       - scope is bounded
       - success criteria are stated
+      - critical uncertainty is named
 
   - id: lite-review-and-gap-analysis
     maps-to:
       - prior-work-review
-      - gap-and-constraint-analysis
+      - problem-characterization-and-gap-analysis
     objective: >
-      Summarize the most relevant prior work and explain why it is insufficient
-      to copy directly for the current task.
+      Summarize only the prior work, practice, or context needed to explain
+      why the current task cannot be solved by direct reuse.
     key-questions:
       - What prior work or practice is closest to this task?
       - Which assumptions from that work are likely to fail here?
       - What constraints or uncertainties dominate the current task?
+      - Which gap matters most for the next decision?
     deliverables:
       - representative-method-summary
       - source-list
       - difference-analysis
       - constraint-list
+      - decision-driving-question
     exit-criteria:
       - at least one relevant prior approach is identified
       - major differences and constraints are explicit
+      - the decision-driving gap is explicit
 
   - id: lite-formalize-and-propose
     maps-to:
@@ -144,36 +197,49 @@ stages:
       - What are the variables, objective, constraints, and metrics?
       - What baselines or comparators matter?
       - Which solution path should be tried first and why?
+      - What is the smallest useful first move?
     deliverables:
       - formal-problem-definition
       - metric-definition
       - baseline-or-comparator-plan
       - proposed-solution-path
       - implementation-plan
+      - validation-gate
+      - next-action
     exit-criteria:
       - the problem representation is testable
       - a concrete initial path is selected
+      - the next action is explicit
+      - the validation gate is explicit
 
   - id: lite-validate-and-revise
     maps-to:
       - validation-and-feedback
-      - reanalysis-and-iteration
+      - failure-diagnosis-and-iterative-revision
     objective: >
-      Evaluate the initial attempt with available evidence and decide whether
-      to revise, continue, or stop.
+      Evaluate the initial attempt with available evidence, explain why it did
+      or did not meet expectations, and decide where to re-enter the loop.
     key-questions:
+      - What was expected and what actually happened?
       - What evidence is available now?
-      - What worked, what failed, and why?
+      - What worked, what failed, and by how much?
+      - Did the result clear the validation gate?
+      - What most likely caused the shortfall: problem characteristics, formalization, model or representation, data, evaluation setup, or implementation?
+      - Which earlier stage should be revisited?
       - What is the next justified action?
     deliverables:
       - evaluation-result
+      - result-gap-summary
       - evidence-log
       - feedback-summary
-      - revision-plan
+      - root-cause-analysis
+      - re-entry-stage
+      - next-action
       - stop-conclusion-if-applicable
     exit-criteria:
       - evidence is collected or limitations are stated
-      - the next action is explicit
+      - result and analysis are both explicit
+      - the next action, re-entry stage, or stop decision is explicit
 
   - id: problem-framing
     objective: >
@@ -182,17 +248,22 @@ stages:
     key-questions:
       - What exactly is the problem?
       - For whom is the problem being solved?
+      - What kind of problem is it: research, engineering, or decision?
       - What is in scope and out of scope?
       - What constraints must be respected?
       - What counts as success?
+      - What uncertainty most blocks progress right now?
     deliverables:
       - structured-problem-statement
+      - problem-type
       - scope-definition
       - success-criteria
+      - critical-uncertainty
     exit-criteria:
       - objective is explicit
       - scope is bounded
       - success criteria are stated
+      - critical uncertainty is named
 
   - id: prior-work-review
     objective: >
@@ -202,34 +273,47 @@ stages:
       - What ideas can be reused?
       - What assumptions do prior methods rely on?
       - Which sources are authoritative enough to cite?
+      - Which prior work most changes the next decision?
       - What failed and why?
     deliverables:
       - representative-method-summary
       - reusable-ideas-list
       - limitations-and-failures-list
       - source-list
+      - decision-driving-question
     exit-criteria:
       - at least one relevant prior approach is identified
       - assumptions and limitations are summarized
       - source quality is assessed when claims depend on it
+      - the review is tied to the current decision rather than generic coverage
 
-  - id: gap-and-constraint-analysis
+  - id: problem-characterization-and-gap-analysis
     objective: >
-      Explain why prior solutions cannot be copied directly and identify
-      the true difficulty of the current problem.
+      Characterize the structure and salient features of the current problem,
+      then explain why prior solutions cannot be copied directly and identify
+      the true difficulty of the current case.
     key-questions:
+      - What structural characteristics define this problem?
+      - Which task features most affect success or failure?
       - How is the current problem different?
       - Which assumptions from prior work no longer hold?
       - What hard constraints dominate the task?
       - Where does uncertainty enter the problem?
+      - What is the primary blocker to the next step?
     deliverables:
+      - problem-characteristics
+      - task-feature-analysis
       - difference-analysis
       - constraint-list
+      - uncertainty-map
       - difficulty-diagnosis
+      - primary-blocker
     exit-criteria:
+      - important problem characteristics are explicit
       - major differences are explicit
       - transferability is assessed
       - core constraints are listed
+      - the primary blocker is named
 
   - id: formalization
     objective: >
@@ -242,17 +326,21 @@ stages:
       - What metrics will be used?
       - What baselines or comparators are relevant?
       - What data are required?
+      - What result would justify continuing or changing course?
     deliverables:
       - formal-problem-definition
       - metric-definition
       - assumption-list
       - baseline-or-comparator-plan
       - data-requirements
+      - validation-gate
+      - next-action-candidate
     exit-criteria:
       - variables and objectives are defined
       - constraints are explicit
       - evaluation metrics are measurable
       - comparison targets are stated when evaluation matters
+      - the validation gate is explicit
 
   - id: solution-attempt
     objective: >
@@ -262,72 +350,91 @@ stages:
       - Why is it chosen over alternatives?
       - What will be implemented first?
       - What risks are anticipated?
+      - What is the smallest useful first step?
     deliverables:
       - proposed-solution-path
       - implementation-plan
       - initial-result-or-prototype
+      - next-action
+      - fallback-option
     exit-criteria:
       - a concrete path is selected
-      - an initial attempt exists
+      - an initial attempt exists or the first execution slice is explicit
 
   - id: validation-and-feedback
     objective: >
-      Evaluate the current attempt using evidence.
+      Evaluate the current attempt using evidence and make the result explicit
+      relative to the expected outcome.
     key-questions:
+      - What was expected before this attempt?
+      - What actually happened?
       - How is performance evaluated?
       - Which baselines or comparators are used?
       - What works?
       - What fails?
-      - What likely causes the deviation?
+      - Where is the gap between expected and actual result?
       - What evidence is missing?
+      - Did the result clear the validation gate?
     deliverables:
+      - result-summary
+      - expected-vs-actual-comparison
+      - result-gap-summary
       - evaluation-result
       - feedback-summary
-      - deviation-diagnosis
       - evidence-log
       - reproducibility-notes
+      - validation-gate-status
     exit-criteria:
       - evidence is collected
       - performance is compared with criteria
-      - failure sources are analyzed when needed
+      - the result gap is explicit
+      - validation-gate status is explicit
 
-  - id: reanalysis-and-iteration
+  - id: failure-diagnosis-and-iterative-revision
     objective: >
-      Revise framing, assumptions, data, method, or implementation path
-      based on the feedback.
+      Diagnose why the result missed, met, or exceeded expectations, then
+      decide which earlier stage should be revisited for the next iteration.
     key-questions:
-      - What should be revised?
-      - What remains valid?
+      - What exactly is the result gap?
+      - Which cause is best supported: prior-work assumptions, problem characteristics, formalization, model or representation, data, evaluation setup, or implementation?
+      - What remains valid despite the shortfall?
+      - Which earlier stage should be revisited next?
+      - What evidence would force a different diagnosis?
       - Should the workflow continue or stop?
-      - If it continues, what is the next cycle?
     deliverables:
-      - revision-plan
+      - root-cause-analysis
+      - dominant-cause
+      - surviving-valid-elements
+      - re-entry-stage
       - next-iteration-plan
+      - next-action
       - stop-conclusion-if-applicable
     exit-criteria:
+      - result and cause analysis are explicit
+      - the re-entry stage is explicit
       - next action is explicit
       - continue or stop decision is justified
 
 transition-rules:
   - from: lite-problem-framing
     to: lite-review-and-gap-analysis
-    condition: objective, scope, and success criteria are explicit
+    condition: objective, scope, success criteria, and critical uncertainty are explicit
 
   - from: lite-review-and-gap-analysis
     to: lite-formalize-and-propose
-    condition: prior work, differences, and constraints are clear enough to proceed
+    condition: prior work, differences, constraints, and the decision-driving gap are clear enough to proceed
 
   - from: lite-formalize-and-propose
     to: lite-validate-and-revise
-    condition: the proposed path is testable or otherwise evaluable
+    condition: the proposed path is testable or otherwise evaluable and the validation gate is explicit
 
   - from: lite-validate-and-revise
     to: lite-formalize-and-propose
-    condition: the task formulation is still valid but the plan needs revision
+    condition: the problem formulation remains valid but the method, implementation, or plan needs revision
 
   - from: lite-validate-and-revise
     to: lite-review-and-gap-analysis
-    condition: prior-work assumptions or transferability must be revisited
+    condition: prior-work assumptions, transferability, or problem characteristics must be revisited
 
   - from: lite-validate-and-revise
     to: end
@@ -335,37 +442,49 @@ transition-rules:
 
   - from: problem-framing
     to: prior-work-review
-    condition: problem is sufficiently framed
+    condition: problem type, framing, and critical uncertainty are explicit
 
   - from: prior-work-review
-    to: gap-and-constraint-analysis
-    condition: prior work has been summarized
+    to: problem-characterization-and-gap-analysis
+    condition: prior work has been summarized in a way that informs the next decision
 
-  - from: gap-and-constraint-analysis
+  - from: problem-characterization-and-gap-analysis
     to: formalization
-    condition: differences and constraints are clear
+    condition: problem characteristics, differences, constraints, and the primary blocker are clear
 
   - from: formalization
     to: solution-attempt
-    condition: the problem representation is testable
+    condition: the problem representation is testable and the validation gate is explicit
 
   - from: solution-attempt
     to: validation-and-feedback
-    condition: an initial attempt exists
+    condition: an initial attempt exists or the first execution slice has been carried out
 
   - from: validation-and-feedback
-    to: reanalysis-and-iteration
+    to: failure-diagnosis-and-iterative-revision
     condition: feedback has been collected
 
-  - from: reanalysis-and-iteration
+  - from: failure-diagnosis-and-iterative-revision
+    to: prior-work-review
+    condition: prior-work assumptions, evidence quality, or comparator choice must be revisited
+
+  - from: failure-diagnosis-and-iterative-revision
+    to: problem-characterization-and-gap-analysis
+    condition: the task features, transfer assumptions, or problem characteristics were misunderstood
+
+  - from: failure-diagnosis-and-iterative-revision
     to: formalization
-    condition: the problem must be reformulated
+    condition: the objective, variables, constraints, assumptions, metrics, or validation gate must be reformulated
 
-  - from: reanalysis-and-iteration
+  - from: failure-diagnosis-and-iterative-revision
     to: solution-attempt
-    condition: the formulation remains valid but the solution path must change
+    condition: the formulation remains valid but the model, algorithm, code, experiment setup, or implementation path must change
 
-  - from: reanalysis-and-iteration
+  - from: failure-diagnosis-and-iterative-revision
+    to: problem-framing
+    condition: the target outcome, scope, or success criteria were materially wrong
+
+  - from: failure-diagnosis-and-iterative-revision
     to: end
     condition: success criteria are met or termination is justified
 
@@ -375,6 +494,7 @@ mode-selection-policy:
     - the problem is already mostly framed
     - uncertainty is limited
     - the consequences of error are moderate
+    - one compact iteration is likely enough
   use-full-if:
     - the task is open-ended
     - multiple constraints interact
@@ -382,14 +502,32 @@ mode-selection-policy:
     - the decision is high-stakes
     - iteration is likely required
 
+problem-type-selection-policy:
+  use-research-if:
+    - claim quality or prior work strongly determines the answer
+  use-engineering-if:
+    - code, systems, tooling, or reproducibility strongly determine the answer
+  use-decision-if:
+    - the main task is choosing among options under constraints
+
 clarification-policy:
   ask-for-clarification-if:
     - the core objective is missing
     - constraints are contradictory
     - success criteria cannot be inferred safely
+    - a missing detail changes an irreversible or high-cost action
   otherwise:
     - make the best grounded assumptions available
     - label assumptions explicitly
+    - continue with the next justified action
+
+default-action-policy:
+  - if a cheap test or comparison can reduce uncertainty materially, prefer it over longer speculation
+  - if the problem type is engineering, prefer reproduce-isolate-test loops
+  - if the problem type is research, prioritize strongest relevant sources over broad surveys
+  - if the problem type is decision, compare a small number of realistic options against explicit criteria
+  - if risk is low, proceed with labeled assumptions
+  - if risk is high or irreversible, pause for targeted clarification
 
 termination-conditions:
   - success criteria are met
@@ -399,18 +537,27 @@ termination-conditions:
 
 quality-checks:
   - Was the problem framed before method selection?
+  - Was the problem type selected explicitly?
+  - Was the critical uncertainty or primary blocker named?
+  - Were the structural characteristics of the current problem made explicit before formalization?
   - Were prior methods summarized with assumptions and limitations?
   - Were source-dependent claims grounded in identifiable sources or labeled as tentative?
   - Were key differences from prior work made explicit?
   - Was the problem formalized into measurable terms where possible?
   - Were baselines, comparators, and evidence requirements stated where evaluation matters?
   - Was a concrete solution attempt proposed?
-  - Was validation based on evidence rather than intuition?
+  - Was a validation gate defined before conclusions were strengthened?
+  - Did each iteration report both result information and analysis information?
+  - Was the dominant cause identified before revising the plan?
+  - Was the re-entry stage chosen explicitly?
+  - Was the next action explicit after diagnosis or iteration?
   - Was the iteration or stopping decision justified?
 
 memory-fields:
   - problem-version
+  - problem-type
   - scope
+  - critical-uncertainty
   - assumptions
   - constraints
   - formalization
@@ -419,7 +566,13 @@ memory-fields:
   - baseline-or-comparator-plan
   - source-list
   - evidence-log
+  - result-history
+  - result-gap-history
   - feedback-log
+  - validation-gate
+  - dominant-cause
+  - re-entry-stage
+  - next-action
   - iteration-history
   - reproducibility-notes
   - stop-rationale
