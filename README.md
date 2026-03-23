@@ -102,13 +102,32 @@ If a task requires claims about prior work, novelty, empirical gains, or safety,
 
 ## Install as a skill
 
-If your environment supports GitHub-based skill installation, publish this repository and install the skill directory:
+If your agent supports local or GitHub-based skills, install the folder at:
 
 ```text
-https://github.com/<your-user>/<your-repo>/tree/main/skills/research-driven-problem-solving
+skills/research-driven-problem-solving
 ```
 
-The skill bundles the workflow spec, routing guide, system prompt, template, and example inside its own `references/` folder so it can be distributed independently of the rest of the repository.
+Minimal local install:
+
+```bash
+mkdir -p ~/.codex/skills
+cp -R skills/research-driven-problem-solving ~/.codex/skills/
+```
+
+If your environment uses a different skills directory, copy the same folder there instead.
+
+The installable bundle is self-contained. It includes:
+
+- `SKILL.md`
+- `agents/openai.yaml`
+- `references/workflow.yaml`
+- `references/problem-routing.md`
+- `references/system-prompt.md`
+- `references/standard-output-template.md`
+- `references/example-research-design.md`
+
+That means you can distribute the skill folder independently of the rest of the repository.
 
 ## Chinese summary
 
