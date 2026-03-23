@@ -2,6 +2,26 @@
 
 An evidence-aware workflow and installable Codex skill for handling open-ended research, engineering, and decision problems.
 
+## Why this exists
+
+This project starts from a simple hypothesis:
+
+many complex problems may share a higher-level problem-solving structure, even when their surface forms look very different.
+
+That does not mean every problem can be solved with one universal method. It means many open-ended research, engineering, and decision tasks may still benefit from a common chain of work:
+
+1. frame the problem
+2. review prior work
+3. characterize the problem
+4. formalize the task
+5. attempt a solution
+6. evaluate the result
+7. diagnose the gap and iterate
+
+The question behind this repository is whether making that structure explicit as a workflow can help an agent perform more reliably on complex tasks, and move from "answering" toward actual problem solving.
+
+This repository is an early iteration of that idea, not a fully validated or production-complete implementation. Feedback, criticism, and contributions are welcome.
+
 ## What this optimized variant changes
 
 This version preserves the original seven-stage workflow, but makes it more effective at actually moving a problem forward:
@@ -93,7 +113,7 @@ The skill bundles the workflow spec, routing guide, system prompt, template, and
 ## Chinese summary
 
 这个优化版保留了原来的七阶段结构，但加强了三件事：先判断任务类型，再尽早识别当前最关键的不确定性，并且在每一轮都明确下一步动作和验证门槛。这样它不只是把复杂问题讲清楚，也更强调把问题持续推进到可验证的结果。
-这个优化版保留了原来的七阶段结构，但加强了三件事：先判断任务类型，再尽早识别当前最关键的不确定性，并且在每一轮都明确下一步动作和验证门槛。这样它不只是把复杂问题讲清楚，也更强调把问题持续推进到可验证的结果。新的第 6、7 步还要求显式记录实验或实践结果、分析未达预期的原因，并决定回到第 2、3、4 或 5 步继续迭代。
+我做这个项目的一个核心想法是：很多复杂问题虽然表面差异很大，但背后可能共享一种更高层的解决问题结构。如果能把这条结构化链条整理成 workflow，并用它去指导 Agent 工作，也许 Agent 在复杂任务上的表现会更稳定、更接近真正有效的问题求解，而不只是“回答得像”。这仍然只是一个很早期的版本，不是完全落地、已经验证充分的方案，更像一个可迭代的起点，也欢迎大家一起交流和完善。新的第 6、7 步还要求显式记录实验或实践结果、分析未达预期的原因，并决定回到第 2、3、4 或 5 步继续迭代。
 
 ## Boundary statement
 
