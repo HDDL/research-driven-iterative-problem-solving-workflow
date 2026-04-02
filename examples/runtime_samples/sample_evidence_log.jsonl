@@ -1,0 +1,2 @@
+{"id":"E1","kind":"factual","summary":"Config diff showed no cache-expansion change large enough to explain the remaining latency gap","effect_on_confidence":"up","provenance":"diff between pre-deploy and current config","source_ids":["SRC1"],"timestamp":"2026-04-02T21:05:00+08:00"}
+{"id":"E2","kind":"log_analysis","summary":"Indexer logs suggest a reindex completed during the deploy window","effect_on_confidence":"up","provenance":"indexer log review from 2026-04-02","source_ids":["SRC2"],"timestamp":"2026-04-02T21:18:00+08:00"}

@@ -1,0 +1,138 @@
+name: <task_name>
+kind: research | decision | planning | diagnosis | communication | hybrid
+problem_statement: >
+  <describe the problem>
+
+agent_capabilities:
+  can_run_code: true/false
+  can_search_web: true/false
+  can_read_files: true/false
+  can_write_files: true/false
+  can_call_apis: true/false
+  can_ask_human: true/false
+  available_tools:
+    - <tool 1>
+    - <tool 2>
+  hard_limits:
+    - <limit 1>
+
+problem_framing:
+  restatement: <one-sentence reframing>
+  desired_outcome: <what good looks like>
+  decision_owner: <who decides or owns the output>
+  stakeholders:
+    - <stakeholder 1>
+    - <stakeholder 2>
+  constraints:
+    - <constraint 1>
+    - <constraint 2>
+  time_horizon: <short | medium | long>
+  reversibility: <high | medium | low>
+  known_facts:
+    - <fact 1>
+  working_assumptions:
+    - <assumption 1>
+  unknowns:
+    - <unknown 1>
+  risks:
+    - <risk 1>
+
+situation_model:
+  problem_kind:
+    - truth | preference | coordination | explanation | sequencing
+  causal_hypotheses:
+    - <hypothesis 1>
+  incentives_and_conflicts:
+    - <important incentive or conflict>
+  prior_case_patterns:
+    - <analogous case or reusable pattern>
+
+evaluation_model:
+  success_signals:
+    - <metric, threshold, or qualitative signal>
+  validation_modes:
+    - executable | factual | comparative | rubric | scenario | stakeholder | consistency
+  hard_checks:
+    - <must remain true>
+  soft_checks:
+    - <qualitative review criterion>
+  stop_conditions:
+    - <when to stop, block, or escalate>
+
+runtime_controls:
+  terminal_goal: <solved | bounded_recommendation_ready | blocked_waiting_for_external_input | budget_exhausted | unsafe_to_continue>
+  max_total_cycles: <integer>
+  max_no_progress_cycles: <integer>
+  max_same_failure_cycles: <integer>
+  max_cycles_without_external_signal: <integer>
+  require_external_checkpoint_for:
+    - <irreversible action, high-impact recommendation, or soft_validation_only_decision>
+
+candidate_options:
+  - id: O1
+    kind: sensemaking | diagnosis | research | option_generation | evaluation | planning | communication | robustness | execution
+    goal: <what this option is trying to achieve>
+    why_it_might_work:
+      - <reason 1>
+    expected_upside:
+      - <upside 1>
+    expected_downside:
+      - <downside 1>
+    scope:
+      - <file, team, artifact, or work area>
+    reads:
+      - <logical resource this item reads>
+    writes:
+      - <logical resource this item writes>
+    checkpoint_namespace: <unique work item namespace; must exactly match the work item id for validator-safe resume>
+    success_signal: <metric, threshold, or rubric outcome>
+    validation:
+      - <command or evaluation procedure>
+    guardrails:
+      - <constraint or no-go condition>
+    progress_signals:
+      - <evidence-backed event that counts as material progress>
+    stop_conditions:
+      - <when this option is sufficiently evaluated or complete>
+    pause_conditions:
+      - <when external input or dependency is required>
+    handoff_conditions:
+      - <when to stop autonomous work and escalate>
+    evidence_budget:
+      max_new_sources: <integer>
+    checkpoint:
+      write:
+        - checkpoints/<namespace>/state.json
+        - logs/<namespace>.evidence_log.jsonl
+      include:
+        - active_work_item
+        - pending_work_items
+        - completed_work_items
+        - rejected_options
+        - decision_log
+        - progress_log
+        - evidence_log
+        - evidence_sources
+        - last_evaluated_hypotheses
+        - terminal_condition
+        - resume_pointer
+    resume_instructions: <where to continue from after resume>
+    iterations: <integer>
+    failure_policy: reframe | refine | pivot | escalate
+
+recommendation:
+  selected_option: <option id>
+  next_action: <bounded next step>
+  terminal_condition: <current terminal state or expected terminal goal>
+  confidence: <very_low | low | medium | high | very_high>
+  confidence_ceiling: <ceiling and reason>
+  mind_change_triggers:
+    - <what would change the recommendation>
+
+success_criteria:
+  local_success:
+    - <local signal>
+  stage_success:
+    - <stage signal>
+  global_success:
+    - <global signal>

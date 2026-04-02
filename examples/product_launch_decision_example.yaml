@@ -1,0 +1,313 @@
+name: ai_meeting_summary_launch_decision
+kind: hybrid
+problem_statement: >
+  Decide whether to launch the AI meeting summary feature broadly this quarter,
+  run a limited beta, or delay until accuracy and trust signals improve.
+
+agent_capabilities:
+  can_run_code: false
+  can_search_web: true
+  can_read_files: true
+  can_write_files: true
+  can_call_apis: false
+  can_ask_human: true
+  available_tools:
+    - web search
+    - document review
+    - memo drafting
+    - stakeholder escalation
+  hard_limits:
+    - cannot run production systems directly
+    - cannot generate fresh customer trust data autonomously
+
+problem_framing:
+  restatement: >
+    Choose the safest and most useful launch path for the feature without
+    damaging user trust or derailing the team's roadmap.
+  desired_outcome: >
+    Create a launch path that balances learning speed, user value, trust, and
+    team capacity.
+  decision_owner: head_of_product
+  stakeholders:
+    - product_team
+    - engineering_team
+    - support_team
+    - enterprise_sales
+    - existing_customers
+  constraints:
+    - no more than 2 engineers can be dedicated for the next 6 weeks
+    - broad launch should not materially increase trust complaints
+    - enterprise availability requires legal review of retained summaries
+  time_horizon: short
+  reversibility: medium
+  known_facts:
+    - internal dogfooding shows strong engagement for short meetings
+    - summary quality drops in long multi-speaker calls
+    - enterprise prospects are asking for the feature in active deals
+    - support has no ready playbook for AI summary disputes
+  working_assumptions:
+    - trust is harder to rebuild than launch timing is to recover
+    - a limited beta can still produce meaningful learning
+    - delaying without external feedback risks polishing the wrong failure mode
+  unknowns:
+    - how often false claims appear in real customer meetings
+    - whether users will understand confidence and editing affordances
+    - how much support burden a broad launch would create
+  risks:
+    - trust damage from incorrect summaries
+    - support volume spike
+    - sales overpromising before operational readiness
+
+situation_model:
+  problem_kind:
+    - coordination
+    - preference
+    - sequencing
+  causal_hypotheses:
+    - broad launch now maximizes learning speed but creates the highest trust downside
+    - a limited beta preserves learning while bounding support and trust risk
+    - a full delay avoids embarrassment but may reduce urgency and hide the most important real-world issues
+  prior_case_patterns:
+    - launch risky AI features behind an opt-in beta with explicit feedback collection
+    - create a support escalation path before exposing probabilistic output broadly
+    - use pre-mortems when a launch can fail through trust rather than simple adoption
+
+evaluation_model:
+  success_signals:
+    - the chosen path remains preferred under downside scenarios
+    - the team can clearly explain why the chosen path beats the alternatives
+    - early feedback produces usable learning without a major trust incident
+  validation_modes:
+    - factual
+    - comparative
+    - scenario
+    - stakeholder
+    - consistency
+  hard_checks:
+    - do not claim production readiness without evidence from external users
+    - do not enable broad enterprise rollout before legal review
+  soft_checks:
+    - likely customer trust impact is acceptable
+    - support can absorb expected failure modes
+    - the recommendation is understandable to executives and frontline teams
+  stop_conditions:
+    - beta users report repeated factual hallucinations in common workflows
+    - legal review blocks the current storage or retention design
+
+runtime_controls:
+  terminal_goal: bounded_recommendation_ready
+  max_total_cycles: 6
+  max_no_progress_cycles: 2
+  max_same_failure_cycles: 2
+  max_cycles_without_external_signal: 3
+  require_external_checkpoint_for:
+    - broad launch recommendation
+    - any decision based only on scenario review without fresh customer evidence
+    - soft_validation_only_bounded_recommendation
+
+candidate_options:
+  - id: O1
+    kind: execution
+    goal: launch broadly this quarter
+    why_it_might_work:
+      - captures demand immediately
+      - accelerates learning through volume
+    expected_upside:
+      - strongest near-term adoption signal
+      - helpful in active enterprise conversations
+    expected_downside:
+      - highest trust and support risk
+      - weakest reversibility once marketed broadly
+    scope:
+      - launch_plan
+      - marketing_message
+      - support_readiness
+    reads:
+      - state.current_recommendation
+      - evidence.trust_signals
+      - stakeholder.product_support_sales
+    writes:
+      - analysis/O1_broad_launch_review
+      - checkpoints/O1/state.json
+      - logs/O1.evidence_log.jsonl
+    checkpoint_namespace: O1
+    success_signal: broad launch remains preferable after downside scenario review
+    validation:
+      - run launch pre-mortem across product, support, and sales
+      - compare likely trust downside against beta and delay options
+    guardrails:
+      - no broad launch without clear support escalation plan
+    progress_signals:
+      - broad launch downside is quantified against the alternatives
+      - O1 is promoted or rejected using stakeholder and scenario evidence
+    stop_conditions:
+      - broad launch remains preferred after pre-mortem and stakeholder review
+    pause_conditions:
+      - customer trust evidence is too weak to compare against beta
+    handoff_conditions:
+      - recommendation would commit the company to a broad launch without legal or support sign-off
+    evidence_budget:
+      max_new_sources: 2
+    checkpoint:
+      write:
+        - checkpoints/O1/state.json
+        - logs/O1.evidence_log.jsonl
+      include:
+        - active_work_item
+        - pending_work_items
+        - completed_work_items
+        - rejected_options
+        - decision_log
+        - progress_log
+        - evidence_log
+        - evidence_sources
+        - last_evaluated_hypotheses
+        - terminal_condition
+        - resume_pointer
+    resume_instructions: resume from downside comparison, not from option generation
+    iterations: 2
+    failure_policy: pivot
+
+  - id: O2
+    kind: planning
+    goal: run a limited opt-in beta with feedback instrumentation
+    why_it_might_work:
+      - captures real-user learning while containing downside
+      - gives time to build support and policy readiness
+    expected_upside:
+      - best learning-to-risk ratio
+      - most reversible path
+    expected_downside:
+      - slower external revenue impact
+      - may frustrate sales if expectations are not managed
+    scope:
+      - beta_criteria
+      - user_selection
+      - support_playbook
+      - feedback_loop
+    reads:
+      - state.current_recommendation
+      - evidence.trust_signals
+      - stakeholder.product_support_sales
+    writes:
+      - analysis/O2_beta_plan_review
+      - checkpoints/O2/state.json
+      - logs/O2.evidence_log.jsonl
+    checkpoint_namespace: O2
+    success_signal: beta path dominates alternatives on reversibility and learning quality
+    validation:
+      - compare trust, support load, and learning speed across scenarios
+      - test alignment with product, support, and sales leads
+    guardrails:
+      - keep beta messaging explicit about limitations
+    progress_signals:
+      - beta path remains preferred after a new stakeholder review cycle
+      - one critical uncertainty about trust or support load is reduced
+    stop_conditions:
+      - beta path remains preferred after stakeholder review and scenario testing
+    pause_conditions:
+      - product, support, or sales leads have not reviewed the beta guardrails
+    handoff_conditions:
+      - beta design requires policy or legal decisions outside the team's authority
+    evidence_budget:
+      max_new_sources: 3
+    checkpoint:
+      write:
+        - checkpoints/O2/state.json
+        - logs/O2.evidence_log.jsonl
+      include:
+        - active_work_item
+        - pending_work_items
+        - completed_work_items
+        - rejected_options
+        - decision_log
+        - progress_log
+        - evidence_log
+        - evidence_sources
+        - last_evaluated_hypotheses
+        - terminal_condition
+        - resume_pointer
+    resume_instructions: continue from stakeholder alignment review
+    iterations: 3
+    failure_policy: refine
+
+  - id: O3
+    kind: planning
+    goal: delay launch until accuracy improves further
+    why_it_might_work:
+      - minimizes public failure risk
+      - allows the team to strengthen model quality before exposure
+    expected_upside:
+      - lowest immediate trust downside
+      - simpler support readiness in the short term
+    expected_downside:
+      - weakest external learning loop
+      - risk of solving the wrong quality issues in isolation
+    scope:
+      - quality_improvement_plan
+      - launch_delay_message
+    reads:
+      - state.current_recommendation
+      - evidence.trust_signals
+      - roadmap.capacity_constraints
+    writes:
+      - analysis/O3_delay_review
+      - checkpoints/O3/state.json
+      - logs/O3.evidence_log.jsonl
+    checkpoint_namespace: O3
+    success_signal: delay remains preferred after accounting for lost learning and sales pressure
+    validation:
+      - compare cost of delay against risk reduction
+      - test whether remaining quality gaps are likely to be solved without customer usage
+    guardrails:
+      - do not let delay become an undefined stall
+    progress_signals:
+      - the cost of delay is quantified against trust-risk reduction
+      - O3 is promoted or rejected with evidence-backed reasoning
+    stop_conditions:
+      - delay remains preferred after lost-learning analysis
+    pause_conditions:
+      - the team lacks a concrete quality plan for the delay window
+    handoff_conditions:
+      - delay would materially affect executive commitments or live deals
+    evidence_budget:
+      max_new_sources: 2
+    checkpoint:
+      write:
+        - checkpoints/O3/state.json
+        - logs/O3.evidence_log.jsonl
+      include:
+        - active_work_item
+        - pending_work_items
+        - completed_work_items
+        - rejected_options
+        - decision_log
+        - progress_log
+        - evidence_log
+        - evidence_sources
+        - last_evaluated_hypotheses
+        - terminal_condition
+        - resume_pointer
+    resume_instructions: continue from quality-gap review instead of reframing the launch choice
+    iterations: 2
+    failure_policy: reframe
+
+recommendation:
+  selected_option: O2
+  next_action: >
+    Draft beta entry criteria, support escalation rules, and a launch pre-mortem
+    for review with product, support, and sales leads this week.
+  terminal_condition: bounded_recommendation_ready
+  confidence: medium
+  confidence_ceiling: medium (no fresh customer trust evidence yet)
+  mind_change_triggers:
+    - accuracy evidence becomes strong enough that broad launch downside is clearly bounded
+    - sales or legal constraints make beta access structure unworkable
+
+success_criteria:
+  local_success:
+    - the beta recommendation remains preferred after downside scenario review
+  stage_success:
+    - trust risk and learning trade-offs are clearer than at the start
+  global_success:
+    - the team has a justified launch path with explicit guardrails and next steps

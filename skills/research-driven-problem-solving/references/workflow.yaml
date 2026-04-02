@@ -1,578 +1,477 @@
-name: research-driven-iterative-problem-solving-workflow
-version: 1.3.0
-type: workflow
-category: meta-skill
-
+name: ARPS
+full_name: Adaptive Reasoning and Problem Solving
+version: 0.7.0
 summary: >
-  A workflow specification for solving open-ended research, engineering,
-  and real-world decision problems through structured framing,
-  formalization, validation, evidence tracking, and iterative refinement,
-  with explicit next-step selection at each cycle.
+  A human-like reasoning workflow for non-physical problems that combines
+  capability awareness, reframing, causal modeling, option generation,
+  trade-off evaluation, and bounded next actions with both hard and soft
+  validation, explicit confidence tracking, and long-run autonomy controls.
 
-positioning:
-  description: >
-    This is a workflow or meta-skill rather than a narrow task-specific tool.
-    It is intended to orchestrate upper-level problem solving, not replace
-    atomic capabilities such as search, coding, retrieval, experimentation,
-    or translation.
-
-problem-types:
-  research:
-    use-when:
-      - prior work, evidence quality, or claim strength strongly affect the answer
-      - the main risk is overclaiming from weak support
-    emphasis:
-      - strongest relevant sources
-      - claim boundaries
-      - evidence gaps
-      - what would falsify the current conclusion
-
-  engineering:
-    use-when:
-      - system behavior, code, tooling, or reproducibility strongly affect the answer
-      - the main risk is shipping an unverified fix or proposal
-    emphasis:
-      - reproduction
-      - isolation of the main blocker
-      - smallest informative test or change
-      - verification after each change
-
-  decision:
-    use-when:
-      - the task is choosing among alternatives under constraints
-      - the main risk is hidden tradeoffs or irreversible downside
-    emphasis:
-      - explicit criteria
-      - a small realistic option set
-      - downside and reversibility
-      - triggers for revisiting the decision
+default_mode: auto
 
 modes:
-  lite:
-    description: >
-      A compact mode for medium-complexity tasks where a full seven-stage
-      workflow would be unnecessarily heavy.
-    stages:
-      - lite-problem-framing
-      - lite-review-and-gap-analysis
-      - lite-formalize-and-propose
-      - lite-validate-and-revise
+  - auto
+  - research
+  - decision
+  - planning
+  - diagnosis
+  - communication
+  - hybrid
 
-  full:
-    description: >
-      A complete mode for open-ended, uncertain, high-stakes, or multi-stage problems.
-    stages:
-      - problem-framing
-      - prior-work-review
-      - problem-characterization-and-gap-analysis
-      - formalization
-      - solution-attempt
-      - validation-and-feedback
-      - failure-diagnosis-and-iterative-revision
-
-applicable-scenarios:
-  - research planning
-  - thesis supervision
-  - engineering diagnosis
-  - method comparison
-  - policy analysis
-  - decision support
-  - technical proposal design
-  - open-ended analytical tasks
-
-non-applicable-scenarios:
-  - single-fact lookup
-  - direct formatting requests
-  - basic translation
-  - low-complexity tasks with complete instructions
-  - purely mechanical execution tasks
-
-inputs:
-  required:
-    - problem-statement
-    - task-context
-    - known-constraints
-    - desired-output
-  optional:
-    - available-resources
-    - prior-attempts
-    - data-availability
-    - evaluation-criteria
-    - deadlines
-    - risk-tolerance
-    - citation-style
-
-outputs:
-  - problem-frame
-  - problem-type
-  - critical-uncertainty
-  - prior-work-summary
-  - problem-characterization-and-gap-analysis
-  - formalized-problem
-  - solution-attempt
-  - result-summary
-  - result-gap-summary
-  - validation-gate
-  - validation-feedback
-  - root-cause-analysis
-  - dominant-cause
-  - re-entry-stage
-  - evidence-log
-  - next-action
-  - iteration-plan
-  - stop-conclusion
-
-governing-principles:
-  - define the problem before searching for methods
-  - identify the uncertainty that most affects the next decision
-  - distinguish prior knowledge from current-problem-specific reasoning
-  - formalize the problem whenever quantification is possible
-  - prefer executable solution paths over vague discussion
-  - prefer the cheapest informative next step when multiple paths are possible
-  - validate claims with evidence
-  - after each attempt, record both the result and the analysis of why it happened
-  - cite concrete sources when source-dependent claims matter
-  - do not claim novelty or superiority without direct support
-  - ask only the minimum clarification needed to avoid unsafe or high-cost mistakes
-  - treat iteration as normal rather than exceptional
-  - stop only when success or justified termination is reached
+problem_kinds:
+  - truth
+  - preference
+  - coordination
+  - explanation
+  - sequencing
 
 stages:
-  - id: lite-problem-framing
-    maps-to:
-      - problem-framing
-    objective: >
-      Define the objective, scope, constraints, resources, and success criteria
-      with only the detail needed to start structured work safely.
-    key-questions:
-      - What exactly is the problem?
-      - What kind of problem is it: research, engineering, or decision?
-      - What is in scope and out of scope?
-      - What constraints must be respected?
-      - What counts as success?
-      - What uncertainty blocks the next step?
-    deliverables:
-      - structured-problem-statement
-      - problem-type
-      - scope-definition
-      - success-criteria
-      - critical-uncertainty
-    exit-criteria:
-      - objective is explicit
-      - scope is bounded
-      - success criteria are stated
-      - critical uncertainty is named
+  - id: inventory
+    name: capability_inventory
+    description: >
+      Enumerate what the agent can actually do before planning.
+      Constrains all downstream work items to feasible actions.
+    outputs:
+      - can_run_code
+      - can_search_web
+      - can_read_files
+      - can_write_files
+      - can_call_apis
+      - can_ask_human
+      - available_tools
+      - hard_limits
 
-  - id: lite-review-and-gap-analysis
-    maps-to:
-      - prior-work-review
-      - problem-characterization-and-gap-analysis
-    objective: >
-      Summarize only the prior work, practice, or context needed to explain
-      why the current task cannot be solved by direct reuse.
-    key-questions:
-      - What prior work or practice is closest to this task?
-      - Which assumptions from that work are likely to fail here?
-      - What constraints or uncertainties dominate the current task?
-      - Which gap matters most for the next decision?
-    deliverables:
-      - representative-method-summary
-      - source-list
-      - difference-analysis
-      - constraint-list
-      - decision-driving-question
-    exit-criteria:
-      - at least one relevant prior approach is identified
-      - major differences and constraints are explicit
-      - the decision-driving gap is explicit
+  - id: orient
+    name: orientation
+    description: Classify the task and identify the dominant problem kind.
+    outputs:
+      - task_type
+      - dominant_problem_kind
+      - initial_scope
 
-  - id: lite-formalize-and-propose
-    maps-to:
-      - formalization
-      - solution-attempt
-    objective: >
-      Convert the task into a testable form and choose one executable path
-      for an initial attempt.
-    key-questions:
-      - What are the variables, objective, constraints, and metrics?
-      - What baselines or comparators matter?
-      - Which solution path should be tried first and why?
-      - What is the smallest useful first move?
-    deliverables:
-      - formal-problem-definition
-      - metric-definition
-      - baseline-or-comparator-plan
-      - proposed-solution-path
-      - implementation-plan
-      - validation-gate
-      - next-action
-    exit-criteria:
-      - the problem representation is testable
-      - a concrete initial path is selected
-      - the next action is explicit
-      - the validation gate is explicit
+  - id: reframe
+    name: problem_reframing
+    description: Rewrite the problem in a more concrete and decision-useful way.
+    outputs:
+      - problem_restatement
+      - desired_outcome
+      - decision_owner
+      - stakeholders
+      - constraints
+      - risks
 
-  - id: lite-validate-and-revise
-    maps-to:
-      - validation-and-feedback
-      - failure-diagnosis-and-iterative-revision
-    objective: >
-      Evaluate the initial attempt with available evidence, explain why it did
-      or did not meet expectations, and decide where to re-enter the loop.
-    key-questions:
-      - What was expected and what actually happened?
-      - What evidence is available now?
-      - What worked, what failed, and by how much?
-      - Did the result clear the validation gate?
-      - What most likely caused the shortfall: problem characteristics, formalization, model or representation, data, evaluation setup, or implementation?
-      - Which earlier stage should be revisited?
-      - What is the next justified action?
-    deliverables:
-      - evaluation-result
-      - result-gap-summary
-      - evidence-log
-      - feedback-summary
-      - root-cause-analysis
-      - re-entry-stage
-      - next-action
-      - stop-conclusion-if-applicable
-    exit-criteria:
-      - evidence is collected or limitations are stated
-      - result and analysis are both explicit
-      - the next action, re-entry stage, or stop decision is explicit
+  - id: model
+    name: situation_modeling
+    description: Separate facts from assumptions and build a light causal model.
+    outputs:
+      - known_facts
+      - working_assumptions
+      - causal_hypotheses
+      - dominant_uncertainties
+      - time_horizon
+      - reversibility
 
-  - id: problem-framing
-    objective: >
-      Clarify the objective, context, scope, constraints, resources,
-      and success criteria.
-    key-questions:
-      - What exactly is the problem?
-      - For whom is the problem being solved?
-      - What kind of problem is it: research, engineering, or decision?
-      - What is in scope and out of scope?
-      - What constraints must be respected?
-      - What counts as success?
-      - What uncertainty most blocks progress right now?
-    deliverables:
-      - structured-problem-statement
-      - problem-type
-      - scope-definition
-      - success-criteria
-      - critical-uncertainty
-    exit-criteria:
-      - objective is explicit
-      - scope is bounded
-      - success criteria are stated
-      - critical uncertainty is named
+  - id: review
+    name: prior_case_review
+    description: Review prior work, analogous cases, and reusable patterns.
+    outputs:
+      - reusable_ideas
+      - analogous_cases
+      - known_failure_patterns
 
-  - id: prior-work-review
-    objective: >
-      Identify related research, practical solutions, and relevant failures.
-    key-questions:
-      - What has already been tried?
-      - What ideas can be reused?
-      - What assumptions do prior methods rely on?
-      - Which sources are authoritative enough to cite?
-      - Which prior work most changes the next decision?
-      - What failed and why?
-    deliverables:
-      - representative-method-summary
-      - reusable-ideas-list
-      - limitations-and-failures-list
-      - source-list
-      - decision-driving-question
-    exit-criteria:
-      - at least one relevant prior approach is identified
-      - assumptions and limitations are summarized
-      - source quality is assessed when claims depend on it
-      - the review is tied to the current decision rather than generic coverage
+  - id: options
+    name: option_generation
+    description: Generate materially different options before committing.
+    outputs:
+      - candidate_options
+      - least_effort_option
+      - safest_reversible_option
+      - highest_upside_option
 
-  - id: problem-characterization-and-gap-analysis
-    objective: >
-      Characterize the structure and salient features of the current problem,
-      then explain why prior solutions cannot be copied directly and identify
-      the true difficulty of the current case.
-    key-questions:
-      - What structural characteristics define this problem?
-      - Which task features most affect success or failure?
-      - How is the current problem different?
-      - Which assumptions from prior work no longer hold?
-      - What hard constraints dominate the task?
-      - Where does uncertainty enter the problem?
-      - What is the primary blocker to the next step?
-    deliverables:
-      - problem-characteristics
-      - task-feature-analysis
-      - difference-analysis
-      - constraint-list
-      - uncertainty-map
-      - difficulty-diagnosis
-      - primary-blocker
-    exit-criteria:
-      - important problem characteristics are explicit
-      - major differences are explicit
-      - transferability is assessed
-      - core constraints are listed
-      - the primary blocker is named
+  - id: evaluate
+    name: tradeoff_evaluation
+    description: Compare options using the most relevant decision lenses.
+    outputs:
+      - comparison_table
+      - preferred_option
+      - reasons_for_rejection
+      - residual_uncertainty
 
-  - id: formalization
-    objective: >
-      Translate the problem into a computable, testable, and comparable form.
-    key-questions:
-      - What are the variables?
-      - What is the objective?
-      - What are the constraints?
-      - What assumptions are being made?
-      - What metrics will be used?
-      - What baselines or comparators are relevant?
-      - What data are required?
-      - What result would justify continuing or changing course?
-    deliverables:
-      - formal-problem-definition
-      - metric-definition
-      - assumption-list
-      - baseline-or-comparator-plan
-      - data-requirements
-      - validation-gate
-      - next-action-candidate
-    exit-criteria:
-      - variables and objectives are defined
-      - constraints are explicit
-      - evaluation metrics are measurable
-      - comparison targets are stated when evaluation matters
-      - the validation gate is explicit
+  - id: act
+    name: bounded_next_action
+    description: Choose one concrete next action and define what would change the recommendation.
+    outputs:
+      - next_action
+      - evidence_to_collect
+      - mind_change_triggers
+      - guardrails
 
-  - id: solution-attempt
-    objective: >
-      Select an executable path and produce an initial solution attempt.
-    key-questions:
-      - Which solution path is chosen?
-      - Why is it chosen over alternatives?
-      - What will be implemented first?
-      - What risks are anticipated?
-      - What is the smallest useful first step?
-    deliverables:
-      - proposed-solution-path
-      - implementation-plan
-      - initial-result-or-prototype
-      - next-action
-      - fallback-option
-    exit-criteria:
-      - a concrete path is selected
-      - an initial attempt exists or the first execution slice is explicit
+  - id: reflect
+    name: reflection
+    description: Update lessons after validation, execution, or scenario testing.
+    outputs:
+      - observed_evidence
+      - lessons
+      - revised_confidence
+      - failure_type
 
-  - id: validation-and-feedback
-    objective: >
-      Evaluate the current attempt using evidence and make the result explicit
-      relative to the expected outcome.
-    key-questions:
-      - What was expected before this attempt?
-      - What actually happened?
-      - How is performance evaluated?
-      - Which baselines or comparators are used?
-      - What works?
-      - What fails?
-      - Where is the gap between expected and actual result?
-      - What evidence is missing?
-      - Did the result clear the validation gate?
-    deliverables:
-      - result-summary
-      - expected-vs-actual-comparison
-      - result-gap-summary
-      - evaluation-result
-      - feedback-summary
-      - evidence-log
-      - reproducibility-notes
-      - validation-gate-status
-    exit-criteria:
-      - evidence is collected
-      - performance is compared with criteria
-      - the result gap is explicit
-      - validation-gate status is explicit
+  - id: synthesize
+    name: synthesis
+    description: Summarize the recommendation, rejected options, uncertainty, and next step.
+    outputs:
+      - final_status
+      - final_recommendation
+      - rejected_options
+      - reusable_lessons
 
-  - id: failure-diagnosis-and-iterative-revision
-    objective: >
-      Diagnose why the result missed, met, or exceeded expectations, then
-      decide which earlier stage should be revisited for the next iteration.
-    key-questions:
-      - What exactly is the result gap?
-      - Which cause is best supported: prior-work assumptions, problem characteristics, formalization, model or representation, data, evaluation setup, or implementation?
-      - What remains valid despite the shortfall?
-      - Which earlier stage should be revisited next?
-      - What evidence would force a different diagnosis?
-      - Should the workflow continue or stop?
-    deliverables:
-      - root-cause-analysis
-      - dominant-cause
-      - surviving-valid-elements
-      - re-entry-stage
-      - next-iteration-plan
-      - next-action
-      - stop-conclusion-if-applicable
-    exit-criteria:
-      - result and cause analysis are explicit
-      - the re-entry stage is explicit
-      - next action is explicit
-      - continue or stop decision is justified
+stage_transitions:
+  inventory_to_orient:
+    condition: capability list is complete
+    checkpoint: true
+  orient_to_reframe:
+    condition: task type and problem kind identified
+    checkpoint: true
+    note: always proceed to reframe, never skip
+  reframe_to_model:
+    condition: problem framing is stable
+    checkpoint: true
+    fallback: if reframing reveals a fundamentally different problem, return to orient
+  model_to_review:
+    condition: facts and assumptions are separated, causal hypotheses exist
+    checkpoint: true
+    fallback: if separation is impossible, stay in model
+  review_to_options:
+    condition: at least one reusable pattern identified, or confirmed no prior work exists
+    checkpoint: true
+  options_to_evaluate:
+    condition: at least 2 materially different options exist
+    checkpoint: true
+    fallback: if only 1 option, stay in options and generate more
+  evaluate_to_act:
+    condition: one option is preferred, or remaining options cannot be separated without new evidence
+    checkpoint: true
+  act_to_reflect:
+    condition: bounded action taken or deliverable produced
+    checkpoint: true
+  reflect_to_any:
+    condition: based on failure diagnosis, route per failure_routing
+    checkpoint: true
+    note: backward transitions are normal, not failure
 
-transition-rules:
-  - from: lite-problem-framing
-    to: lite-review-and-gap-analysis
-    condition: objective, scope, success criteria, and critical uncertainty are explicit
+task_routing:
+  auto:
+    rules:
+      - if_primary_need_is_comparing_options_under_uncertainty: decision
+      - if_primary_need_is_designing_sequence_or_rollout: planning
+      - if_primary_need_is_explaining_why_something_is_failing: diagnosis
+      - if_primary_need_is_shaping_a_message_or_memo: communication
+      - if_problem_spans_multiple_modes_or_has_partial_validation: hybrid
+      - else: research
 
-  - from: lite-review-and-gap-analysis
-    to: lite-formalize-and-propose
-    condition: prior work, differences, constraints, and the decision-driving gap are clear enough to proceed
+validation_modes:
+  - executable
+  - factual
+  - comparative
+  - rubric
+  - scenario
+  - stakeholder
+  - consistency
 
-  - from: lite-formalize-and-propose
-    to: lite-validate-and-revise
-    condition: the proposed path is testable or otherwise evaluable and the validation gate is explicit
+failure_taxonomy:
+  - framing_failure
+  - evidence_failure
+  - causal_failure
+  - option_failure
+  - tradeoff_failure
+  - stakeholder_failure
+  - communication_failure
+  - constraint_failure
+  - execution_failure
+  - scope_failure
 
-  - from: lite-validate-and-revise
-    to: lite-formalize-and-propose
-    condition: the problem formulation remains valid but the method, implementation, or plan needs revision
+failure_routing:
+  framing_failure: reframe
+  evidence_failure: model
+  causal_failure: model
+  option_failure: options
+  tradeoff_failure: evaluate
+  stakeholder_failure: reframe
+  communication_failure: act
+  constraint_failure: reframe
+  execution_failure: act
+  scope_failure: orient
 
-  - from: lite-validate-and-revise
-    to: lite-review-and-gap-analysis
-    condition: prior-work assumptions, transferability, or problem characteristics must be revisited
+failure_triggers:
+  consecutive_discards: 3
+  no_progress_cycles: 2
+  same_failure_type: 2
+  budget_exhausted: true
+  soft_validation_only_after_all_cycles: mark_provisional
 
-  - from: lite-validate-and-revise
-    to: end
-    condition: success criteria are met or termination is justified
+execution_policy:
+  separate_facts_from_assumptions: true
+  generate_multiple_options_before_commit: true
+  prefer_reversible_actions: true
+  mark_proxy_validation_explicitly: true
+  preserve_rejected_options_briefly: true
+  update_lessons_each_iteration: true
+  inventory_capabilities_before_planning: true
+  escalation_order:
+    - reframe
+    - gather_evidence
+    - generate_new_options
+    - escalate_blocker
 
-  - from: problem-framing
-    to: prior-work-review
-    condition: problem type, framing, and critical uncertainty are explicit
+parallel_policy:
+  enabled: true
+  max_concurrent_work_items: 3
+  require_independence: true
+  independence_check: reads must not intersect another item's writes, and writes must be pairwise disjoint
+  per_item_checkpoint: true
+  failure_isolation: true
+  merge_before_next_stage: true
 
-  - from: prior-work-review
-    to: problem-characterization-and-gap-analysis
-    condition: prior work has been summarized in a way that informs the next decision
+confidence_tracking:
+  levels:
+    - very_low
+    - low
+    - medium
+    - high
+    - very_high
+  increase_on:
+    - work_item_local_success
+    - critical_uncertainty_eliminated
+    - guard_passed_2_plus_consecutive
+    - confirming_evidence_from_independent_source
+  decrease_on:
+    - guard_or_constraint_failure
+    - result_not_reproducible
+    - evidence_contradicts_assumption
+    - same_failure_type_twice
+  reset_to_low_on:
+    - problem_reframed
+    - dominant_hypothesis_changed
+    - decision_owner_changed
+  ceilings:
+    soft_validation_only: medium
+    fewer_than_2_evidence_sources: medium
+    critical_unknown_unresolved: medium
+    reframed_this_cycle: low
 
-  - from: problem-characterization-and-gap-analysis
-    to: formalization
-    condition: problem characteristics, differences, constraints, and the primary blocker are clear
+runtime_controls:
+  require_checkpoint_before_stage_transition: true
+  require_checkpoint_after_work_item: true
+  require_checkpoint_before_irreversible_action: true
+  max_no_progress_cycles: 2
+  max_same_failure_cycles: 2
+  max_cycles_without_external_signal: 4
+  hard_stop_on_budget_exhaustion: true
+  pause_on_missing_external_dependency: true
+  require_external_checkpoint_for:
+    - irreversible_actions
+    - high_blast_radius_recommendations
+    - soft_validation_only_decisions
+  terminal_statuses:
+    - solved
+    - bounded_recommendation_ready
+    - blocked_waiting_for_external_input
+    - budget_exhausted
+    - unsafe_to_continue
 
-  - from: formalization
-    to: solution-attempt
-    condition: the problem representation is testable and the validation gate is explicit
+run_loop:
+  repeat_until_terminal:
+    - load_latest_checkpoint
+    - if_terminal_condition_is_named_then_stop
+    - if_hard_budget_is_exhausted_then_set_budget_exhausted_and_stop
+    - rebuild_ready_queue_from_pending_work_items
+    - if_resume_pointer_exists_then_try_that_work_item_first
+    - if_ready_queue_is_empty_and_waiting_on_external_then_set_blocked_and_stop
+    - select_next_work_item_by_priority
+    - execute_one_attempt_only
+    - decrement_iteration_budget_for_attempted_item
+    - decrement_evidence_budget_for_each_new_source
+    - if_new_external_signal_arrived_reset_external_signal_budget
+    - if_external_signal_is_still_required_and_none_arrived_decrement_external_signal_budget
+    - if_external_signal_budget_reaches_zero_then_set_blocked_and_stop
+    - evaluate_progress_markers
+    - update_confidence_counters_and_failure_state
+    - checkpoint_state_and_evidence
+    - route_to_next_stage_or_terminal_state
+  selection_priority:
+    - item_reduces_dominant_uncertainty
+    - item_has_hard_validation_available
+    - item_has_lowest_blast_radius
+    - item_unblocks_other_items
+    - oldest_pending_item
+  resume_rules:
+    - resume_pointer_takes_precedence_over_new_selection
+    - do_not_rerun_completed_item_unless_invalidated
+    - invalidate_on_new_contradictory_evidence_or_constraint_change
 
-  - from: solution-attempt
-    to: validation-and-feedback
-    condition: an initial attempt exists or the first execution slice has been carried out
+progress_markers:
+  material_progress_requires_one_of:
+    - new_independent_evidence_changes_hypothesis_status
+    - new_external_signal_received
+    - dominant_uncertainty_reduced_or_resolved
+    - option_or_work_item_rejected_with_evidence_backed_reason
+    - blocker_removed
+    - hard_check_or_guard_newly_passes
+    - confidence_ceiling_increases_from_new_independent_evidence
+  does_not_count_as_progress:
+    - restating_same_recommendation_without_new_evidence
+    - rewording_same_argument_without_new_tradeoff_resolution
+    - stage_change_without_new_information
+  logging_rules:
+    - progress_log MUST record one entry per cycle
+    - progress_log markers MUST use only the allowed material progress vocabulary
+    - an empty markers list means the cycle made no material progress
+    - consecutive_no_progress MUST equal the number of trailing cycles with empty markers
 
-  - from: validation-and-feedback
-    to: failure-diagnosis-and-iterative-revision
-    condition: feedback has been collected
+checkpoint_policy:
+  mode: full_snapshot
+  required_contents:
+    - active_work_item
+    - pending_work_items
+    - completed_work_items
+    - rejected_options
+    - evidence_log
+    - evidence_sources
+    - last_evaluated_hypotheses
+    - decision_log
+    - progress_log
+    - terminal_condition
+    - resume_pointer
+  evidence_trail_requirements:
+    - every checkpoint MUST preserve the full evidence_log, not only evidence ids
+    - every evidence record MUST retain provenance or source linkage sufficient for replay
+    - evidence_sources MUST remain available for every source referenced by the checkpoint
 
-  - from: failure-diagnosis-and-iterative-revision
-    to: prior-work-review
-    condition: prior-work assumptions, evidence quality, or comparator choice must be revisited
+resume_pointer_schema:
+  required_fields:
+    - work_item_id
+    - attempt_id
+    - stage
+    - checkpoint_namespace
+    - next_step
+  invariants:
+    - work_item_id MUST refer to the active work item or a pending work item
+    - checkpoint_namespace MUST equal the resumed work item's checkpoint_namespace
+    - stage MUST equal current_stage unless the resume explicitly advances the state during checkpoint write
 
-  - from: failure-diagnosis-and-iterative-revision
-    to: problem-characterization-and-gap-analysis
-    condition: the task features, transfer assumptions, or problem characteristics were misunderstood
+human_escalation:
+  triggers:
+    - domain_certified_judgment_required
+    - blocker_persists_after_all_escalation_levels
+    - irreversible_action_with_soft_validation_only
+    - user_intent_ambiguous_and_affects_objective
+    - constraint_violation_irreversible
+    - options_tied_on_value_judgment
+  message_template: |
+    I am blocked on [specific thing].
+    Reason: [why I cannot resolve this autonomously].
+    What I need from you: [specific question or decision].
+    Options if relevant: [A vs B, with trade-offs].
+    What I will do after your input: [concrete next step].
+  rules:
+    - never escalate with vague requests
+    - always provide context, options, and proposed path
+    - include current confidence level
 
-  - from: failure-diagnosis-and-iterative-revision
-    to: formalization
-    condition: the objective, variables, constraints, assumptions, metrics, or validation gate must be reformulated
+work_item_schema:
+  required_fields:
+    - id
+    - kind
+    - goal
+    - scope
+    - reads
+    - writes
+    - checkpoint_namespace
+    - success_signal
+    - validation
+    - guardrails
+    - progress_signals
+    - stop_conditions
+    - pause_conditions
+    - handoff_conditions
+    - evidence_budget
+    - checkpoint
+    - resume_instructions
+    - iterations
+    - failure_policy
 
-  - from: failure-diagnosis-and-iterative-revision
-    to: solution-attempt
-    condition: the formulation remains valid but the model, algorithm, code, experiment setup, or implementation path must change
+state_schema:
+  required_fields:
+    - run_id
+    - current_stage
+    - capabilities
+    - active_work_item
+    - pending_work_items
+    - completed_work_items
+    - rejected_options
+    - last_completed_action
+    - last_checkpoint_at
+    - last_external_signal_at
+    - confidence
+    - confidence_ceiling
+    - evidence_log
+    - evidence_sources
+    - last_evaluated_hypotheses
+    - decision_log
+    - progress_log
+    - blockers
+    - waiting_on
+    - waiting_on_external
+    - budgets
+    - counters
+    - terminal_condition
+    - resume_pointer
+    - resume_instructions
+  progress_log_schema:
+    required_fields:
+      - cycle
+      - markers
+    rules:
+      - markers MAY be empty only when no material progress occurred in that cycle
+      - evidence_ids are required whenever markers is non-empty
 
-  - from: failure-diagnosis-and-iterative-revision
-    to: problem-framing
-    condition: the target outcome, scope, or success criteria were materially wrong
+success_hierarchy:
+  local_success:
+    - recommendation_more_defensible
+    - uncertainty_reduced_or_better_bounded
+    - guardrails_remain_satisfied
+  stage_success:
+    - next_action_clearer
+    - dominated_option_removed_with_reason
+    - stakeholder_reality_better_modeled
+  global_success:
+    - problem_better_framed_than_initial_request
+    - final_recommendation_supported_by_best_available_evidence
+    - constraints_and_stakeholder_realities_acknowledged
+    - next_action_is_concrete_and_justified
 
-  - from: failure-diagnosis-and-iterative-revision
-    to: end
-    condition: success criteria are met or termination is justified
+memory:
+  lesson_levels:
+    - case_specific
+    - strategy_pattern
+    - anti_pattern
+  preferred_store:
+    - lessons.md
+    - cases.md
+    - state.json
+    - evidence_log.jsonl
 
-mode-selection-policy:
-  use-lite-if:
-    - the task is medium in complexity
-    - the problem is already mostly framed
-    - uncertainty is limited
-    - the consequences of error are moderate
-    - one compact iteration is likely enough
-  use-full-if:
-    - the task is open-ended
-    - multiple constraints interact
-    - uncertainty is significant
-    - the decision is high-stakes
-    - iteration is likely required
-
-problem-type-selection-policy:
-  use-research-if:
-    - claim quality or prior work strongly determines the answer
-  use-engineering-if:
-    - code, systems, tooling, or reproducibility strongly determine the answer
-  use-decision-if:
-    - the main task is choosing among options under constraints
-
-clarification-policy:
-  ask-for-clarification-if:
-    - the core objective is missing
-    - constraints are contradictory
-    - success criteria cannot be inferred safely
-    - a missing detail changes an irreversible or high-cost action
-  otherwise:
-    - make the best grounded assumptions available
-    - label assumptions explicitly
-    - continue with the next justified action
-
-default-action-policy:
-  - if a cheap test or comparison can reduce uncertainty materially, prefer it over longer speculation
-  - if the problem type is engineering, prefer reproduce-isolate-test loops
-  - if the problem type is research, prioritize strongest relevant sources over broad surveys
-  - if the problem type is decision, compare a small number of realistic options against explicit criteria
-  - if risk is low, proceed with labeled assumptions
-  - if risk is high or irreversible, pause for targeted clarification
-
-termination-conditions:
-  - success criteria are met
-  - no feasible path exists under current constraints
-  - evidence quality is too weak to support further claims
-  - further iteration is not justified by expected improvement
-
-quality-checks:
-  - Was the problem framed before method selection?
-  - Was the problem type selected explicitly?
-  - Was the critical uncertainty or primary blocker named?
-  - Were the structural characteristics of the current problem made explicit before formalization?
-  - Were prior methods summarized with assumptions and limitations?
-  - Were source-dependent claims grounded in identifiable sources or labeled as tentative?
-  - Were key differences from prior work made explicit?
-  - Was the problem formalized into measurable terms where possible?
-  - Were baselines, comparators, and evidence requirements stated where evaluation matters?
-  - Was a concrete solution attempt proposed?
-  - Was a validation gate defined before conclusions were strengthened?
-  - Did each iteration report both result information and analysis information?
-  - Was the dominant cause identified before revising the plan?
-  - Was the re-entry stage chosen explicitly?
-  - Was the next action explicit after diagnosis or iteration?
-  - Was the iteration or stopping decision justified?
-
-memory-fields:
-  - problem-version
-  - problem-type
-  - scope
-  - critical-uncertainty
-  - assumptions
-  - constraints
-  - formalization
-  - chosen-solution-path
-  - evaluation-metrics
-  - baseline-or-comparator-plan
-  - source-list
-  - evidence-log
-  - result-history
-  - result-gap-history
-  - feedback-log
-  - validation-gate
-  - dominant-cause
-  - re-entry-stage
-  - next-action
-  - iteration-history
-  - reproducibility-notes
-  - stop-rationale
+final_report:
+  sections:
+    - capability_inventory
+    - problem_framing
+    - situation_model
+    - prior_cases
+    - candidate_options
+    - recommendation
+    - validation
+    - confidence_and_ceiling
+    - residual_uncertainty
+    - checkpoint_status
+    - terminal_condition
+    - lessons
+    - final_status

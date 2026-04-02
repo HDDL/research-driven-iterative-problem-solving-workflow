@@ -1,0 +1,308 @@
+name: cross_team_escalation_process_alignment
+kind: hybrid
+problem_statement: >
+  Design a way to align product, support, and sales on a new customer escalation
+  process without creating excessive bureaucracy or leaving ownership ambiguous.
+
+agent_capabilities:
+  can_run_code: false
+  can_search_web: true
+  can_read_files: true
+  can_write_files: true
+  can_call_apis: false
+  can_ask_human: true
+  available_tools:
+    - document review
+    - scenario walkthroughs
+    - process drafting
+    - stakeholder escalation
+  hard_limits:
+    - cannot observe real team behavior without pilot feedback
+    - cannot enforce organizational process changes autonomously
+
+problem_framing:
+  restatement: >
+    Create a lightweight escalation process that teams will actually use and that
+    makes ownership, urgency, and customer communication clearer.
+  desired_outcome: >
+    Teams can route urgent customer issues consistently, know who owns the next
+    step, and avoid repeated conflict about priority.
+  decision_owner: chief_of_staff
+  stakeholders:
+    - product_team
+    - support_team
+    - sales_team
+    - engineering_team
+    - customer_success
+  constraints:
+    - the process should add minimal meeting overhead
+    - teams should not need new tooling to start
+    - executive escalation should remain rare and explicit
+  time_horizon: medium
+  reversibility: high
+  known_facts:
+    - teams currently escalate through personal messages and ad hoc meetings
+    - support feels response ownership is unclear
+    - product feels sales overuses the word urgent
+    - engineering wants fewer unstructured interruptions
+  working_assumptions:
+    - ambiguity about ownership is a bigger problem than lack of goodwill
+    - a simple pilot is more likely to stick than a full policy rewrite
+    - terminology alignment matters as much as tooling
+  unknowns:
+    - which escalation categories truly need cross-functional review
+    - whether teams will adopt a template consistently
+    - what turnaround expectations are realistic
+  risks:
+    - process becomes performative and ignored
+    - a rigid queue slows real emergencies
+    - teams interpret severity labels differently
+
+situation_model:
+  problem_kind:
+    - coordination
+    - explanation
+    - sequencing
+  causal_hypotheses:
+    - most friction comes from missing shared definitions rather than bad intent
+    - a single lightweight intake format plus explicit owner handoff will reduce conflict
+    - a heavy process will fail because teams already perceive too much overhead
+  prior_case_patterns:
+    - pilot workflow changes with a small set of issue types before broad rollout
+    - define severity labels with examples rather than abstract words alone
+    - pair process changes with a short FAQ and ownership matrix
+
+evaluation_model:
+  success_signals:
+    - stakeholders can explain the process the same way
+    - ownership handoff becomes clearer in common scenarios
+    - the process survives a realistic stress-test without obvious bottlenecks
+  validation_modes:
+    - comparative
+    - rubric
+    - scenario
+    - stakeholder
+    - consistency
+  hard_checks:
+    - no step should require a standing meeting for every escalation
+    - emergency escalation path must remain available
+  soft_checks:
+    - teams view the process as usable rather than ceremonial
+    - severity labels are understandable in practice
+  stop_conditions:
+    - pilot participants bypass the new flow for ordinary cases
+    - no single owner is willing to accept intake responsibility
+
+runtime_controls:
+  terminal_goal: bounded_recommendation_ready
+  max_total_cycles: 5
+  max_no_progress_cycles: 2
+  max_same_failure_cycles: 2
+  max_cycles_without_external_signal: 3
+  require_external_checkpoint_for:
+    - organization-wide rollout recommendation
+    - any conclusion based only on internal role-play without pilot feedback
+    - soft_validation_only_bounded_recommendation
+
+candidate_options:
+  - id: O1
+    kind: communication
+    goal: publish a formal policy memo immediately
+    why_it_might_work:
+      - gives clarity quickly
+      - creates a single source of truth
+    expected_upside:
+      - fast documentation
+      - low short-term coordination cost
+    expected_downside:
+      - weak adoption if teams do not buy in
+      - definitions may stay abstract
+    scope:
+      - policy_memo
+      - ownership_matrix
+    reads:
+      - state.current_recommendation
+      - stakeholder.product_support_sales
+      - process.current_escalation_flow
+    writes:
+      - analysis/O1_policy_memo_review
+      - checkpoints/O1/state.json
+      - logs/O1.evidence_log.jsonl
+    checkpoint_namespace: O1
+    success_signal: teams interpret the written policy consistently in scenario review
+    validation:
+      - run scenario walkthroughs using the memo only
+    guardrails:
+      - avoid adding approval layers without named benefit
+    progress_signals:
+      - memo-only path is promoted or rejected with scenario evidence
+      - one source of ownership ambiguity is resolved
+    stop_conditions:
+      - the memo remains understandable and preferred after scenario walkthrough
+    pause_conditions:
+      - no stakeholder is available to test the memo against realistic cases
+    handoff_conditions:
+      - policy publication would impose a new mandatory process across teams
+    evidence_budget:
+      max_new_sources: 2
+    checkpoint:
+      write:
+        - checkpoints/O1/state.json
+        - logs/O1.evidence_log.jsonl
+      include:
+        - active_work_item
+        - pending_work_items
+        - completed_work_items
+        - rejected_options
+        - decision_log
+        - progress_log
+        - evidence_log
+        - evidence_sources
+        - last_evaluated_hypotheses
+        - terminal_condition
+        - resume_pointer
+    resume_instructions: resume from memo scenario review
+    iterations: 2
+    failure_policy: pivot
+
+  - id: O2
+    kind: planning
+    goal: pilot a lightweight intake template and owner handoff with two teams
+    why_it_might_work:
+      - allows learning before broad standardization
+      - balances clarity with low process overhead
+    expected_upside:
+      - highest adoption likelihood
+      - fastest path to discovering edge cases
+    expected_downside:
+      - slower organization-wide rollout
+      - temporary inconsistency while pilot runs
+    scope:
+      - intake_template
+      - pilot_playbook
+      - severity_examples
+    reads:
+      - state.current_recommendation
+      - process.current_escalation_flow
+      - stakeholder.product_support_sales
+    writes:
+      - analysis/O2_pilot_review
+      - checkpoints/O2/state.json
+      - logs/O2.evidence_log.jsonl
+    checkpoint_namespace: O2
+    success_signal: pilot flow remains clear and usable in common and edge-case scenarios
+    validation:
+      - run role-play scenarios with support and product leads
+      - collect pilot feedback after two weeks
+    guardrails:
+      - keep the template short enough to fill in under 5 minutes
+    progress_signals:
+      - pilot flow survives a new role-play or pilot feedback cycle
+      - one blocker in ownership or severity labeling is removed
+    stop_conditions:
+      - pilot flow remains clear after role-play and first feedback cycle
+    pause_conditions:
+      - pilot participants or owner reviewers are unavailable
+    handoff_conditions:
+      - pilot requires executive policy arbitration to proceed
+    evidence_budget:
+      max_new_sources: 3
+    checkpoint:
+      write:
+        - checkpoints/O2/state.json
+        - logs/O2.evidence_log.jsonl
+      include:
+        - active_work_item
+        - pending_work_items
+        - completed_work_items
+        - rejected_options
+        - decision_log
+        - progress_log
+        - evidence_log
+        - evidence_sources
+        - last_evaluated_hypotheses
+        - terminal_condition
+        - resume_pointer
+    resume_instructions: continue from pilot feedback review
+    iterations: 3
+    failure_policy: refine
+
+  - id: O3
+    kind: planning
+    goal: create a weekly triage council for all escalations
+    why_it_might_work:
+      - gives high visibility and shared decision making
+    expected_upside:
+      - strongest formal coordination
+      - easier executive oversight
+    expected_downside:
+      - highest overhead
+      - likely too slow for urgent cases
+    scope:
+      - meeting_cadence
+      - triage_roles
+    reads:
+      - state.current_recommendation
+      - process.current_escalation_flow
+      - timing.response_expectations
+    writes:
+      - analysis/O3_triage_council_review
+      - checkpoints/O3/state.json
+      - logs/O3.evidence_log.jsonl
+    checkpoint_namespace: O3
+    success_signal: council remains preferable after time-cost and urgency stress-test
+    validation:
+      - compare response-time impact and meeting overhead against the pilot option
+    guardrails:
+      - do not route every escalation through a weekly meeting
+    progress_signals:
+      - council option is rejected or promoted with response-time evidence
+      - meeting-overhead uncertainty is reduced
+    stop_conditions:
+      - council option is clearly dominated on urgency or overhead
+    pause_conditions:
+      - expected meeting overhead cannot be estimated credibly
+    handoff_conditions:
+      - adopting the council would require executive mandate
+    evidence_budget:
+      max_new_sources: 2
+    checkpoint:
+      write:
+        - checkpoints/O3/state.json
+        - logs/O3.evidence_log.jsonl
+      include:
+        - active_work_item
+        - pending_work_items
+        - completed_work_items
+        - rejected_options
+        - decision_log
+        - progress_log
+        - evidence_log
+        - evidence_sources
+        - last_evaluated_hypotheses
+        - terminal_condition
+        - resume_pointer
+    resume_instructions: continue from overhead comparison
+    iterations: 2
+    failure_policy: reframe
+
+recommendation:
+  selected_option: O2
+  next_action: >
+    Draft the pilot intake template, severity examples, and owner handoff rules,
+    then test them in three realistic escalation scenarios with support and
+    product leads.
+  terminal_condition: bounded_recommendation_ready
+  confidence: medium
+  confidence_ceiling: medium (pilot feedback is still missing)
+  mind_change_triggers:
+    - teams strongly resist filling the template even in pilot
+    - scenario testing shows the owner handoff is still ambiguous
+
+success_criteria:
+  local_success:
+    - pilot option remains preferred after role-play and stress-test
+  stage_success:
+    - ownership ambiguity and severity definitions are clearer than before
+  global_success:
+    - the organization has a lightweight, adoptable escalation starting point

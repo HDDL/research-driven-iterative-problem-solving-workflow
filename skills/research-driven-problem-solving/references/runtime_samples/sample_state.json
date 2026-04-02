@@ -1,0 +1,163 @@
+{
+  "run_id": "arps-sample-001",
+  "current_stage": "evaluate",
+  "capabilities": {
+    "can_run_code": true,
+    "can_search_web": false,
+    "can_read_files": true,
+    "can_write_files": true,
+    "can_call_apis": false,
+    "can_ask_human": true,
+    "available_tools": [
+      "shell commands",
+      "file read/write",
+      "grep/search"
+    ],
+    "hard_limits": [
+      "no production deploy authority",
+      "waiting on pre-deploy snapshot from tech lead"
+    ]
+  },
+  "active_work_item": "O2",
+  "pending_work_items": [
+    "O3"
+  ],
+  "completed_work_items": [
+    "O1"
+  ],
+  "rejected_options": [
+    {
+      "id": "O4",
+      "reason": "Rejected after evidence showed no cache-miss regression",
+      "evidence_ids": [
+        "E1"
+      ]
+    }
+  ],
+  "last_completed_action": "Compared current config with pre-deploy config and ruled it out as the sole cause",
+  "last_checkpoint_at": "2026-04-02T21:30:00+08:00",
+  "last_external_signal_at": "2026-04-02T20:40:00+08:00",
+  "confidence": "low",
+  "confidence_ceiling": "medium",
+  "evidence_log": [
+    {
+      "id": "E1",
+      "kind": "factual",
+      "summary": "Config diff showed no cache-expansion change large enough to explain the remaining latency gap",
+      "effect_on_confidence": "up",
+      "provenance": "diff between pre-deploy and current config",
+      "source_ids": [
+        "SRC1"
+      ]
+    },
+    {
+      "id": "E2",
+      "kind": "log_analysis",
+      "summary": "Indexer logs suggest a reindex completed during the deploy window",
+      "effect_on_confidence": "up",
+      "provenance": "indexer log review from 2026-04-02",
+      "source_ids": [
+        "SRC2"
+      ]
+    }
+  ],
+  "evidence_sources": [
+    {
+      "id": "SRC1",
+      "kind": "config_diff",
+      "provenance": "git diff from pre-deploy tag to reverted commit"
+    },
+    {
+      "id": "SRC2",
+      "kind": "log_review",
+      "provenance": "indexer log review from 2026-04-02"
+    },
+    {
+      "id": "SRC3",
+      "kind": "human_input",
+      "provenance": "backend tech lead confirmed index snapshot exists but has not uploaded it yet"
+    }
+  ],
+  "last_evaluated_hypotheses": [
+    {
+      "id": "H1",
+      "status": "rejected",
+      "supported_by": [
+        "E1"
+      ]
+    },
+    {
+      "id": "H2",
+      "status": "active",
+      "supported_by": [
+        "E2"
+      ]
+    }
+  ],
+  "decision_log": [
+    {
+      "at": "2026-04-02T21:10:00+08:00",
+      "decision": "Reject config-only explanation",
+      "because": "Config delta did not explain enough of the remaining p99 gap",
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "at": "2026-04-02T21:20:00+08:00",
+      "decision": "Prioritize index-state diagnosis",
+      "because": "Indexer logs better explain the partial recovery after revert",
+      "evidence_ids": [
+        "E2"
+      ]
+    }
+  ],
+  "progress_log": [
+    {
+      "cycle": 1,
+      "markers": [
+        "option_or_work_item_rejected_with_evidence_backed_reason"
+      ],
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "cycle": 2,
+      "markers": [
+        "dominant_uncertainty_reduced_or_resolved"
+      ],
+      "evidence_ids": [
+        "E2"
+      ]
+    }
+  ],
+  "blockers": [
+    "Need the pre-deploy index snapshot before O2 can continue deterministically"
+  ],
+  "waiting_on": [
+    "predeploy_index_snapshot"
+  ],
+  "waiting_on_external": [
+    "predeploy_index_snapshot"
+  ],
+  "budgets": {
+    "iterations_remaining": 3,
+    "no_progress_cycles_remaining": 1,
+    "external_signal_cycles_remaining": 0
+  },
+  "counters": {
+    "consecutive_no_progress": 0,
+    "consecutive_discards": 0,
+    "repeated_failure_type_count": 0
+  },
+  "terminal_condition": "blocked_waiting_for_external_input",
+  "resume_pointer": {
+    "work_item_id": "O2",
+    "attempt_id": "A2",
+    "stage": "evaluate",
+    "checkpoint_namespace": "O2",
+    "next_step": "Compare the pre-deploy index snapshot with the current index metadata and decide whether to stage a rebuild"
+  },
+  "resume_instructions": "Wait for the tech lead to provide the index snapshot, then continue O2 without regenerating the option set."
+}

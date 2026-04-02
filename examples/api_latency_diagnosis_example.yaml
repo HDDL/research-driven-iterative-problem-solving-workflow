@@ -1,0 +1,307 @@
+name: api_latency_regression_diagnosis
+kind: diagnosis
+problem_statement: >
+  The p99 API latency for the /search endpoint jumped from 120ms to 450ms after
+  last week's deploy. The team reverted the deploy but latency only partially
+  recovered. Find the root cause and recommend a fix.
+
+agent_capabilities:
+  can_run_code: true
+  can_search_web: false
+  can_read_files: true
+  can_write_files: true
+  can_call_apis: false
+  can_ask_human: true
+  available_tools:
+    - file read/write
+    - shell commands
+    - git history
+    - grep/search
+  hard_limits:
+    - no access to production database
+    - no access to Grafana API directly
+    - must work from logs and code
+
+problem_framing:
+  restatement: >
+    Identify why /search p99 latency is still ~280ms after reverting last week's
+    deploy, when the pre-deploy baseline was 120ms.
+  desired_outcome: >
+    Root cause identified, fix validated in staging, latency returns to within
+    10% of the 120ms baseline.
+  decision_owner: backend_tech_lead
+  stakeholders:
+    - backend_team
+    - oncall_engineer
+    - product_team
+  constraints:
+    - fix must not require a schema migration in the hot path
+    - must preserve current search relevance quality
+    - staging validation required before production deploy
+  time_horizon: short
+  reversibility: high
+  known_facts:
+    - p99 jumped from 120ms to 450ms after deploy on 2026-03-25
+    - revert on 2026-03-26 brought p99 down to ~280ms, not to baseline
+    - the deploy included a new search ranking model and a query parser refactor
+    - the revert rolled back the code but not the config change that accompanied it
+    - no schema changes were in the deploy
+  working_assumptions:
+    - the partial recovery after revert suggests two contributing factors
+    - one factor was in the code (reverted), another is in config or data (not reverted)
+    - the config change may have altered cache behavior or query expansion
+  unknowns:
+    - whether the config change affected cache hit rate
+    - whether the new ranking model left behind index artifacts
+    - whether background reindexing from the deploy is still running
+  risks:
+    - fixing the wrong cause while the real one compounds
+    - a hasty fix that degrades search relevance
+
+situation_model:
+  problem_kind:
+    - explanation
+    - truth
+  causal_hypotheses:
+    - the un-reverted config change widened query expansion, increasing cache misses
+    - the deploy triggered a reindex that changed the index layout, and the revert did not rebuild the index
+    - both factors contribute, which explains why the revert only partially recovered latency
+  incentives_and_conflicts:
+    - oncall wants a fast fix to stop the page alerts
+    - product team does not want to lose any search quality gains from the new ranking model
+  prior_case_patterns:
+    - partial revert recovery often means a stateful side-effect was not rolled back
+    - config-driven cache invalidation is a common hidden latency source
+    - always check what was NOT reverted, not just what was
+
+evaluation_model:
+  success_signals:
+    - p99 latency returns to within 130ms in staging
+    - search relevance metrics do not degrade
+  validation_modes:
+    - executable
+    - factual
+    - comparative
+  hard_checks:
+    - staging p99 <= 130ms after fix
+    - search relevance score >= baseline
+    - no new errors in search service logs
+  soft_checks:
+    - the causal explanation accounts for both the spike and the partial recovery
+    - the fix is minimal and does not require a migration
+  stop_conditions:
+    - root cause identified and fix validated in staging
+    - or: two independent causal paths confirmed and both addressed
+
+runtime_controls:
+  terminal_goal: solved
+  max_total_cycles: 8
+  max_no_progress_cycles: 2
+  max_same_failure_cycles: 2
+  max_cycles_without_external_signal: 3
+  require_external_checkpoint_for:
+    - any production deploy recommendation
+    - soft_validation_only_root_cause_summary
+
+candidate_options:
+  - id: O1
+    kind: diagnosis
+    goal: verify whether the un-reverted config change caused cache miss rate increase
+    why_it_might_work:
+      - the config was not reverted, which matches the partial recovery pattern
+      - cache miss rate is directly measurable from logs
+    expected_upside:
+      - fast to check, high explanatory value
+    expected_downside:
+      - may only explain part of the latency gap
+    scope:
+      - config/search_config.yaml
+      - logs/search_cache.log
+    reads:
+      - state.current_recommendation
+      - logs/search_cache.log
+      - config/search_config.yaml
+    writes:
+      - analysis/O1_cache_diagnosis
+      - checkpoints/O1/state.json
+      - logs/O1.evidence_log.jsonl
+    checkpoint_namespace: O1
+    success_signal: cache miss rate delta explains >50% of the remaining latency gap
+    validation:
+      - diff config between pre-deploy and current
+      - grep cache hit/miss rates in logs before and after deploy
+      - revert config in staging and measure p99
+    guardrails:
+      - do not change production config without tech lead approval
+    progress_signals:
+      - config delta is quantified with evidence ids attached
+      - cache hypothesis is promoted or rejected using staging measurement
+    stop_conditions:
+      - cache miss rate change quantified and staging p99 measured with reverted config
+    pause_conditions:
+      - staging environment is unavailable
+    handoff_conditions:
+      - config revert would affect other services sharing the config
+    evidence_budget:
+      max_new_sources: 3
+    checkpoint:
+      write:
+        - checkpoints/O1/state.json
+        - logs/O1.evidence_log.jsonl
+      include:
+        - active_work_item
+        - pending_work_items
+        - completed_work_items
+        - rejected_options
+        - decision_log
+        - progress_log
+        - evidence_log
+        - evidence_sources
+        - last_evaluated_hypotheses
+        - terminal_condition
+        - resume_pointer
+    resume_instructions: continue from cache analysis, not from problem framing
+    iterations: 3
+    failure_policy: refine
+
+  - id: O2
+    kind: diagnosis
+    goal: check whether the deploy left behind index artifacts that the revert did not clean up
+    why_it_might_work:
+      - reindexing side-effects are a known source of partial-revert latency
+      - explains why code revert alone was insufficient
+    expected_upside:
+      - if confirmed, a targeted index rebuild solves the remaining gap
+    expected_downside:
+      - index rebuild may take time and temporarily increase latency further
+    scope:
+      - scripts/reindex.py
+      - data/search_index/
+      - logs/indexer.log
+    reads:
+      - state.current_recommendation
+      - logs/indexer.log
+      - data/search_index/
+    writes:
+      - analysis/O2_index_diagnosis
+      - checkpoints/O2/state.json
+      - logs/O2.evidence_log.jsonl
+    checkpoint_namespace: O2
+    success_signal: index state differs from pre-deploy snapshot and rebuilding restores latency
+    validation:
+      - compare current index metadata against pre-deploy backup
+      - check indexer logs for incomplete or ongoing reindex operations
+      - rebuild index in staging and measure p99
+    guardrails:
+      - do not rebuild production index without staging validation first
+    progress_signals:
+      - index hypothesis is promoted or rejected with backup and log evidence
+      - remaining latency gap is better explained than before
+    stop_conditions:
+      - index state compared and staging rebuild tested
+    pause_conditions:
+      - pre-deploy index backup is not available
+    handoff_conditions:
+      - index rebuild requires production downtime
+    evidence_budget:
+      max_new_sources: 3
+    checkpoint:
+      write:
+        - checkpoints/O2/state.json
+        - logs/O2.evidence_log.jsonl
+      include:
+        - active_work_item
+        - pending_work_items
+        - completed_work_items
+        - rejected_options
+        - decision_log
+        - progress_log
+        - evidence_log
+        - evidence_sources
+        - last_evaluated_hypotheses
+        - terminal_condition
+        - resume_pointer
+    resume_instructions: continue from index comparison
+    iterations: 3
+    failure_policy: pivot
+
+  - id: O3
+    kind: execution
+    goal: if both O1 and O2 confirm contributing factors, apply combined fix in staging
+    why_it_might_work:
+      - addresses both identified causes simultaneously
+    expected_upside:
+      - full latency recovery in one staging validation cycle
+    expected_downside:
+      - harder to attribute improvement if both changes are applied together
+    scope:
+      - config/search_config.yaml
+      - scripts/reindex.py
+      - staging environment
+    reads:
+      - analysis/O1_cache_diagnosis
+      - analysis/O2_index_diagnosis
+      - staging/search_metrics
+    writes:
+      - analysis/O3_combined_fix
+      - checkpoints/O3/state.json
+      - logs/O3.evidence_log.jsonl
+    checkpoint_namespace: O3
+    success_signal: staging p99 <= 130ms with search relevance >= baseline
+    validation:
+      - run staging load test after combined fix
+      - compare search relevance scores before and after
+    guardrails:
+      - validate each fix independently in staging before combining
+      - do not deploy to production without tech lead sign-off
+    progress_signals:
+      - staging latency returns within threshold
+      - relevance guard stays at or above baseline
+    stop_conditions:
+      - staging p99 and relevance both pass thresholds
+    pause_conditions:
+      - either O1 or O2 is still incomplete
+    handoff_conditions:
+      - production deploy decision
+    evidence_budget:
+      max_new_sources: 2
+    checkpoint:
+      write:
+        - checkpoints/O3/state.json
+        - logs/O3.evidence_log.jsonl
+      include:
+        - active_work_item
+        - pending_work_items
+        - completed_work_items
+        - rejected_options
+        - decision_log
+        - progress_log
+        - evidence_log
+        - evidence_sources
+        - last_evaluated_hypotheses
+        - terminal_condition
+        - resume_pointer
+    resume_instructions: continue from combined staging test
+    iterations: 2
+    failure_policy: reframe
+
+recommendation:
+  selected_option: O2
+  next_action: >
+    Ask the backend tech lead for the pre-deploy index snapshot or metadata
+    export, then resume O2 by comparing it with the current index state before
+    proposing a fix.
+  terminal_condition: blocked_waiting_for_external_input
+  confidence: low
+  confidence_ceiling: medium (one critical evidence source is still missing)
+  mind_change_triggers:
+    - the pre-deploy index snapshot shows no drift, shifting the diagnosis back toward config
+    - cache analysis reveals the miss-rate change alone explains the remaining latency gap
+
+success_criteria:
+  local_success:
+    - one contributing factor is confirmed with evidence
+  stage_success:
+    - the causal model explains both the spike and partial recovery
+  global_success:
+    - staging p99 returns to within 130ms with relevance preserved

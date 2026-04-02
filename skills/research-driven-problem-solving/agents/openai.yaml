@@ -1,7 +1,7 @@
 interface:
-  display_name: "Research Problem Solving"
-  short_description: "Structure complex tasks into evidence-backed next steps."
-  default_prompt: "Use $research-driven-problem-solving to frame this task, evaluate the latest result, diagnose the dominant cause, and choose the next justified action."
+  display_name: "ARPS"
+  short_description: "Human-like reasoning for complex non-physical problems."
+  default_prompt: "Use $arps to clarify the real problem, model stakeholders and causes, compare options, checkpoint progress, and choose the next bounded action."
 
 policy:
   allow_implicit_invocation: true
